@@ -15,7 +15,4 @@ export function makeRng(seed: number) {
 
 export type Rng = ReturnType<typeof makeRng>
 
-export const randInt = (rng: Rng, min: number, max: number) =>
-  min + Math.floor(rng() * (max - min + 1))
-
 export const chance = (rng: Rng, p: number) => rng() < p

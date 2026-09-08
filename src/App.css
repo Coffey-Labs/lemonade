@@ -124,7 +124,6 @@
 .warn { color: var(--atari-red); text-shadow: 0 0 8px rgba(255, 138, 122, 0.5); }
 .money { color: var(--atari-green); }
 
-.inv,
 .inv-line {
   background: var(--atari-text);
   color: var(--atari-screen-dark);

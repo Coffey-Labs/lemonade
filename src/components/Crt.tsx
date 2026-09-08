@@ -53,11 +53,6 @@ export function Line({ children, className = '' }: { children?: ReactNode; class
   return <div className={`line ${className}`}>{children ?? ' '}</div>
 }
 
-/** Atari inverse video: light background, dark characters. */
-export function Inv({ children }: { children: ReactNode }) {
-  return <span className="inv">{children}</span>
-}
-
 export function Btn({
   children,
   onClick,
