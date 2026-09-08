@@ -47,3 +47,4 @@ export type Phase =
   | 'resolve'
   | 'report'
   | 'gameover'
+  | 'scores'

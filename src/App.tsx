@@ -4,12 +4,14 @@ import { synth } from './audio/synth'
 import { WEATHER } from './game/constants'
 import { dollars, randomSeed, rollDay, simulate } from './game/engine'
 import { makeRng, type Rng } from './game/rng'
+import { addScores, clearScores, loadScores, type Score } from './game/highscores'
 import { activePlayers, initialState, reducer } from './game/reducer'
 import type { Decision } from './game/types'
 import { BriefingScreen } from './components/BriefingScreen'
 import { Btn, Crt, Fit } from './components/Crt'
 import { DecideScreen } from './components/DecideScreen'
 import { GameOverScreen } from './components/GameOverScreen'
+import { HighScoreScreen } from './components/HighScoreScreen'
 import { IntroScreen } from './components/IntroScreen'
 import { ReportScreen } from './components/ReportScreen'
 import { SetupScreen } from './components/SetupScreen'
@@ -23,6 +25,8 @@ export default function App() {
   const [music, setMusic] = useState(true)
   const [sfx, setSfx] = useState(true)
   const started = useRef(false)
+  const [scores, setScores] = useState<Score[]>(loadScores)
+  const [freshScores, setFreshScores] = useState<string[]>([])
 
   const active = activePlayers(state)
   const current = active[Math.min(state.turn, Math.max(0, active.length - 1))]
@@ -110,23 +114,51 @@ export default function App() {
     beginDay(state.day + 1, state.streetCrewYesterday)
   }
 
+  /** Close the books: everyone who traded gets a line in the table. */
   const retire = () => {
     synth.fanfare()
+    const glassesFor = (id: number) =>
+      state.history.reduce((n, r) => (r.playerId === id ? n + r.glassesSold : n), 0)
+    const { table, added } = addScores(
+      state.players.map((p) => ({
+        name: p.name,
+        assets: p.assets,
+        days: p.bankruptDay ?? state.day,
+        glasses: glassesFor(p.id),
+        seed: state.seed,
+        broke: p.bankrupt,
+      })),
+    )
+    setScores(table)
+    setFreshScores(added)
     dispatch({ type: 'RETIRE' })
   }
 
   const restart = () => {
     const s = randomSeed()
     rng.current = makeRng(s)
+    setFreshScores([])
     dispatch({ type: 'RESTART', seed: s })
+  }
+
+  const showScores = () => {
+    wake()
+    synth.select()
+    dispatch({ type: 'SHOW_SCORES' })
   }
 
   // ---------------------------------------------------------------- render
 
+  // Only the trading screens have a day, a sky and a till to report on.
   const status = useMemo(() => {
-    if (state.phase === 'title' || state.phase === 'intro' || state.phase === 'setup') return null
-    const w = state.conditions ? WEATHER[state.conditions.weather].label : ''
-    return { day: state.day, weather: w, player: current }
+    const inPlay =
+      state.phase === 'briefing' || state.phase === 'decide' || state.phase === 'report'
+    if (!inPlay || !state.conditions) return null
+    return {
+      day: state.day,
+      weather: WEATHER[state.conditions.weather].label,
+      player: current,
+    }
   }, [state.phase, state.day, state.conditions, current])
 
   return (
@@ -171,7 +203,12 @@ export default function App() {
 
         <Fit>
           {state.phase === 'title' && (
-            <TitleGate seed={state.seed} onStart={goSetup} onInstructions={goIntro} />
+            <TitleGate
+              seed={state.seed}
+              onStart={goSetup}
+              onInstructions={goIntro}
+              onScores={showScores}
+            />
           )}
 
           {state.phase === 'intro' && <IntroScreen onDone={() => dispatch({ type: 'SHOW_SETUP' })} />}
@@ -218,6 +255,20 @@ export default function App() {
               history={state.history}
               days={state.day}
               onRestart={restart}
+              onScores={showScores}
+            />
+          )}
+
+          {state.phase === 'scores' && (
+            <HighScoreScreen
+              scores={scores}
+              highlight={freshScores}
+              onBack={() => {
+                synth.select()
+                dispatch({ type: 'CLOSE_SCORES' })
+              }}
+              onClear={() => setScores(clearScores())}
+              onBlip={blip}
             />
           )}
         </Fit>
@@ -227,7 +278,12 @@ export default function App() {
 }
 
 /** Enter or Space works as the START key, the way the console did. */
-function TitleGate(props: { seed: number; onStart: () => void; onInstructions: () => void }) {
+function TitleGate(props: {
+  seed: number
+  onStart: () => void
+  onInstructions: () => void
+  onScores: () => void
+}) {
   const { onStart } = props
 
   useEffect(() => {

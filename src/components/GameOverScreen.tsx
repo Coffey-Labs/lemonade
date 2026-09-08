@@ -11,11 +11,13 @@ export function GameOverScreen({
   history,
   days,
   onRestart,
+  onScores,
 }: {
   players: Player[]
   history: DayResult[]
   days: number
   onRestart: () => void
+  onScores: () => void
 }) {
   const ranked = [...players].sort((a, b) => b.assets - a.assets)
   const best = history.reduce<DayResult | null>(
@@ -69,6 +71,7 @@ export function GameOverScreen({
         <Btn kind="primary" onClick={onRestart}>
           PLAY AGAIN
         </Btn>
+        <Btn onClick={onScores}>HIGH SCORES</Btn>
       </div>
     </div>
   )

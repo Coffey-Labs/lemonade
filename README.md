@@ -34,6 +34,20 @@ pocket money.
 You are broke when you cannot afford a single glass. Otherwise the summer runs
 as long as you like; **RETIRE** closes the books and shows the standings.
 
+## High scores
+
+Retiring writes every player's closing balance to a top-ten table kept in
+`localStorage`, reachable from the title screen and from the standings. Runs
+from the summer you just finished are picked out in yellow. Ties break on the
+shorter season, then on the earlier date.
+
+The table is per-browser, not per-device, and it is the one piece of state the
+game keeps between visits. Anything already in storage can be edited by hand,
+so every field is validated on the way back in and malformed rows are dropped
+rather than trusted. If storage is unavailable — a private window, or a browser
+set to block site data — the game plays normally and the table simply stays
+empty. **WIPE TABLE** clears it, and asks once before it does.
+
 ## How it is put together
 
 ```
@@ -43,6 +57,7 @@ src/
     engine.ts     rolls each day and settles the takings
     reducer.ts    the day/turn state machine
     rng.ts        seeded mulberry32, so a run can be replayed
+    highscores.ts the persisted table, with validation on load
   audio/
     synth.ts      pulse-wave voices, noise percussion, look-ahead sequencer
     tunes.ts      the title, trading and closing themes

@@ -16,6 +16,8 @@ export interface GameState {
   /** True while road works were in progress yesterday, so they can run on. */
   streetCrewYesterday: boolean
   retired: boolean
+  /** Where the high score table was opened from, so BACK can return there. */
+  scoresReturn: Phase
 }
 
 export const initialState = (seed: number): GameState => ({
@@ -30,6 +32,7 @@ export const initialState = (seed: number): GameState => ({
   history: [],
   streetCrewYesterday: false,
   retired: false,
+  scoresReturn: 'title',
 })
 
 export type Action =
@@ -42,6 +45,8 @@ export type Action =
   | { type: 'RESOLVE'; results: DayResult[] }
   | { type: 'NEXT_DAY' }
   | { type: 'RETIRE' }
+  | { type: 'SHOW_SCORES' }
+  | { type: 'CLOSE_SCORES' }
   | { type: 'RESTART'; seed: number }
 
 /** Players who can still afford to open the stand, in seating order. */
@@ -129,6 +134,14 @@ export function reducer(state: GameState, action: Action): GameState {
 
     case 'RETIRE':
       return { ...state, phase: 'gameover', retired: true }
+
+    case 'SHOW_SCORES':
+      return state.phase === 'scores'
+        ? state
+        : { ...state, phase: 'scores', scoresReturn: state.phase }
+
+    case 'CLOSE_SCORES':
+      return { ...state, phase: state.scoresReturn }
 
     case 'RESTART':
       return initialState(action.seed)

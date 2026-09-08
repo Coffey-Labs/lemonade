@@ -268,6 +268,25 @@
 .report-value { white-space: nowrap; }
 .report-row.strong { color: var(--atari-bright); font-weight: 700; }
 
+/* ------------------------------------------------------- high scores */
+
+.score-days {
+  white-space: nowrap;
+  font-size: 0.82em;
+  padding-right: 0.8ch;
+}
+
+/* Runs added by the summer just finished. */
+.score-row.is-new,
+.score-row.is-new .report-value,
+.score-row.is-new .score-days {
+  color: var(--atari-yellow);
+  text-shadow: 0 0 8px rgba(247, 222, 90, 0.45);
+  font-weight: 700;
+}
+
+.score-row.is-new .report-dots { border-bottom-color: rgba(247, 222, 90, 0.4); }
+
 /* ------------------------------------------------------------ buttons */
 
 .row {

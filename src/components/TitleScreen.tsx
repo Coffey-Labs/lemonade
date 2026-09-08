@@ -6,10 +6,12 @@ const BANNER = bannerRows('LEMONADE')
 export function TitleScreen({
   onStart,
   onInstructions,
+  onScores,
   seed,
 }: {
   onStart: () => void
   onInstructions: () => void
+  onScores: () => void
   seed: number
 }) {
   return (
@@ -29,6 +31,7 @@ export function TitleScreen({
           START
         </Btn>
         <Btn onClick={onInstructions}>INSTRUCTIONS</Btn>
+        <Btn onClick={onScores}>HIGH SCORES</Btn>
       </div>
     </div>
   )
