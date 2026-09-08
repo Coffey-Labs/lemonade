@@ -65,9 +65,9 @@ export function TradingScreen({
       <div className="stack">
         <Line className="center inv-line">DAY {conditions.day} IN LEMONSVILLE</Line>
         <Scene conditions={conditions} traffic={0.2} />
-        <Line className="warn">A THUNDERSTORM HIT LEMONSVILLE EARLIER</Line>
-        <Line className="warn">TODAY, JUST AS THE STANDS WERE BEING</Line>
-        <Line className="warn">SET UP. EVERYTHING WAS RUINED!!</Line>
+        <Line className="warn">THE SKY OPENED OVER THE TOWN THIS</Line>
+        <Line className="warn">MORNING, RIGHT AS THE STANDS WENT UP.</Line>
+        <Line className="warn">NOT ONE GLASS SURVIVED IT.</Line>
         <Line />
         <div className="row center">
           <Btn kind="primary" onClick={onDone}>

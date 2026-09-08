@@ -18,20 +18,11 @@ export function costPerGlass(day: number): number {
 
 export function costMessage(day: number): string[] | null {
   if (day === 1)
-    return [
-      'ON DAY 1 THE COST OF LEMONADE IS',
-      '2 CENTS PER GLASS.',
-    ]
+    return ['LEMONS ARE CHEAP THIS WEEK. A GLASS', 'COSTS YOU 2 CENTS TO MAKE.']
   if (day === 3)
-    return [
-      'YOUR COST OF LEMONADE HAS GONE UP',
-      'TO 4 CENTS PER GLASS.',
-    ]
+    return ['LEMONS HAVE GONE UP. A GLASS NOW', 'COSTS YOU 4 CENTS TO MAKE.']
   if (day === 8)
-    return [
-      'YOUR COST OF LEMONADE HAS GONE UP',
-      'TO 5 CENTS PER GLASS.',
-    ]
+    return ['LEMONS ARE DEARER AGAIN. A GLASS NOW', 'COSTS YOU 5 CENTS TO MAKE.']
   return null
 }
 

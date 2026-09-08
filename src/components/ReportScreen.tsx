@@ -51,7 +51,7 @@ export function ReportScreen({
 
   return (
     <div className="stack">
-      <Line className="center inv-line">$$ LEMONSVILLE DAILY FINANCIAL REPORT $$</Line>
+      <Line className="center inv-line">$$ THE DAY&apos;S TAKINGS $$</Line>
 
       <Scene
         conditions={conditions}
@@ -80,8 +80,8 @@ export function ReportScreen({
       {player.bankrupt && (
         <>
           <Line />
-          <Line className="warn">{player.name}, YOU DO NOT HAVE ENOUGH</Line>
-          <Line className="warn">MONEY LEFT TO STAY IN BUSINESS.</Line>
+          <Line className="warn">{player.name}, THERE IS NOTHING LEFT IN</Line>
+          <Line className="warn">THE TIN. YOUR STAND IS FINISHED.</Line>
         </>
       )}
 

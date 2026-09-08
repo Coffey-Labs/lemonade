@@ -173,7 +173,7 @@ Affero rather than plain GPL because the leaderboard is a network service:
 anyone running a modified copy of it for other people has to offer them the
 source. Running the game on its own imposes nothing extra.
 
-The simulation, the artwork and the music are original work. The game's *rules*
-are not anyone's property, and some of the on-screen wording is quoted from the
-1979 original as homage rather than authored here. [NOTICE.md](NOTICE.md) sets
-out exactly what came from where, and credits the people who wrote it first.
+The simulation, the artwork, the music and every word on screen are original
+work — the game's *rules* are nobody's property, and nothing here is quoted
+from the original. [NOTICE.md](NOTICE.md) sets out exactly what came from
+where, and credits the people who wrote it first.

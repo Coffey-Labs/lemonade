@@ -27,16 +27,15 @@ export function BriefingScreen({
       {conditions.heatWave && (
         <>
           <Line />
-          <Line className="warn">A HEAT WAVE IS PREDICTED FOR TODAY!</Line>
-          <Line className="warn">EVERYONE IN TOWN IS THIRSTY.</Line>
+          <Line className="warn">A HEAT WAVE HAS SETTLED OVER THE</Line>
+          <Line className="warn">TOWN. EVERY THROAT IN IT IS DRY.</Line>
         </>
       )}
       {conditions.streetCrew && (
         <>
           <Line />
-          <Line className="warn">THE STREET CREWS ARE WORKING TODAY.</Line>
-          <Line className="warn">THERE WILL BE NO TRAFFIC ON YOUR</Line>
-          <Line className="warn">STREET.</Line>
+          <Line className="warn">THE ROAD IS DUG UP OUTSIDE. NOTHING</Line>
+          <Line className="warn">IS COMING DOWN YOUR STREET TODAY.</Line>
         </>
       )}
       {conditions.festival && (

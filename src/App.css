@@ -267,6 +267,20 @@ html[data-skin='modern'] .vignette { opacity: 0.35; }
 
 .center { text-align: center; }
 
+/* Instructions: a named condition, then what it does to your day. */
+.intro-entry {
+  margin: 0 0 0.6em;
+  line-height: 1.4;
+}
+
+.intro-term {
+  color: var(--accent);
+  font-weight: 700;
+  margin-right: 0.8ch;
+}
+
+html[data-skin='modern'] .intro-term { font-weight: 900; }
+
 /* Reserved space for a message that comes and goes without a jolt. */
 .hint {
   opacity: 0;
