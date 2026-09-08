@@ -1,0 +1,297 @@
+/**
+ * A very small chiptune engine: pulse waves for voices, filtered white noise
+ * for percussion, and a look-ahead scheduler so patterns stay in time even
+ * when React is busy re-rendering.
+ */
+
+const NOTE_INDEX: Record<string, number> = {
+  C: 0, 'C#': 1, D: 2, 'D#': 3, E: 4, F: 5,
+  'F#': 6, G: 7, 'G#': 8, A: 9, 'A#': 10, B: 11,
+}
+
+/** "C#4" -> Hz. A4 = 440. */
+export function noteToFreq(note: string): number {
+  const m = /^([A-G]#?)(-?\d)$/.exec(note)
+  if (!m) return 0
+  const semis = NOTE_INDEX[m[1]] + (Number(m[2]) + 1) * 12
+  return 440 * Math.pow(2, (semis - 69) / 12)
+}
+
+export type Wave = 'pulse12' | 'pulse25' | 'pulse50' | 'triangle' | 'saw' | 'noise'
+
+export interface Track {
+  wave: Wave
+  gain: number
+  /** One entry per step. '.' rest, '=' sustain previous, otherwise a note. */
+  notes: string[]
+}
+
+export interface Tune {
+  bpm: number
+  stepsPerBeat: number
+  tracks: Track[]
+}
+
+/** Fourier series for a pulse wave of the given duty cycle. */
+function pulseWave(ctx: AudioContext, duty: number, harmonics = 24): PeriodicWave {
+  const real = new Float32Array(harmonics + 1)
+  const imag = new Float32Array(harmonics + 1)
+  for (let n = 1; n <= harmonics; n++) {
+    imag[n] = (2 / (n * Math.PI)) * Math.sin(n * Math.PI * duty)
+  }
+  return ctx.createPeriodicWave(real, imag, { disableNormalization: false })
+}
+
+export class Synth {
+  private ctx: AudioContext | null = null
+  private master!: GainNode
+  private musicBus!: GainNode
+  private sfxBus!: GainNode
+  private waves: Partial<Record<Wave, PeriodicWave>> = {}
+  private noiseBuffer!: AudioBuffer
+
+  private tune: Tune | null = null
+  private step = 0
+  private nextStepTime = 0
+  private timer: number | null = null
+
+  musicOn = true
+  sfxOn = true
+
+  /** Must be called from a user gesture the first time. */
+  ensure(): AudioContext {
+    if (this.ctx) {
+      if (this.ctx.state === 'suspended') void this.ctx.resume()
+      return this.ctx
+    }
+    const ctx = new AudioContext()
+    this.ctx = ctx
+    this.master = ctx.createGain()
+    this.master.gain.value = 0.5
+    this.master.connect(ctx.destination)
+
+    this.musicBus = ctx.createGain()
+    this.musicBus.gain.value = 0.55
+    this.musicBus.connect(this.master)
+
+    this.sfxBus = ctx.createGain()
+    this.sfxBus.gain.value = 0.9
+    this.sfxBus.connect(this.master)
+
+    this.waves.pulse12 = pulseWave(ctx, 0.125)
+    this.waves.pulse25 = pulseWave(ctx, 0.25)
+    this.waves.pulse50 = pulseWave(ctx, 0.5)
+
+    const len = Math.floor(ctx.sampleRate * 1.5)
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate)
+    const data = buf.getChannelData(0)
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1
+    this.noiseBuffer = buf
+
+    return ctx
+  }
+
+  setMusic(on: boolean) {
+    this.musicOn = on
+    if (!this.ctx) return
+    this.musicBus.gain.setTargetAtTime(on ? 0.55 : 0, this.ctx.currentTime, 0.05)
+  }
+
+  setSfx(on: boolean) {
+    this.sfxOn = on
+    if (!this.ctx) return
+    this.sfxBus.gain.setTargetAtTime(on ? 0.9 : 0, this.ctx.currentTime, 0.02)
+  }
+
+  // ---------------------------------------------------------------- voices
+
+  private voice(
+    dest: AudioNode,
+    wave: Wave,
+    freq: number,
+    at: number,
+    dur: number,
+    gain: number,
+  ) {
+    const ctx = this.ensure()
+    const osc = ctx.createOscillator()
+    if (wave === 'triangle') osc.type = 'triangle'
+    else if (wave === 'saw') osc.type = 'sawtooth'
+    else osc.setPeriodicWave(this.waves[wave] ?? this.waves.pulse50!)
+    osc.frequency.setValueAtTime(freq, at)
+
+    const env = ctx.createGain()
+    const peak = Math.max(0.0001, gain)
+    env.gain.setValueAtTime(0.0001, at)
+    env.gain.exponentialRampToValueAtTime(peak, at + 0.008)
+    env.gain.setValueAtTime(peak, at + Math.max(0.02, dur * 0.6))
+    env.gain.exponentialRampToValueAtTime(0.0001, at + dur)
+
+    osc.connect(env).connect(dest)
+    osc.start(at)
+    osc.stop(at + dur + 0.02)
+  }
+
+  private percussion(dest: AudioNode, kind: string, at: number, gain: number) {
+    const ctx = this.ensure()
+    const src = ctx.createBufferSource()
+    src.buffer = this.noiseBuffer
+    const filter = ctx.createBiquadFilter()
+    const env = ctx.createGain()
+
+    let dur = 0.06
+    if (kind === 'K') {
+      filter.type = 'lowpass'
+      filter.frequency.value = 220
+      dur = 0.12
+    } else if (kind === 'S') {
+      filter.type = 'bandpass'
+      filter.frequency.value = 1800
+      dur = 0.12
+    } else {
+      filter.type = 'highpass'
+      filter.frequency.value = 6000
+      dur = 0.04
+    }
+
+    env.gain.setValueAtTime(gain, at)
+    env.gain.exponentialRampToValueAtTime(0.0001, at + dur)
+    src.connect(filter).connect(env).connect(dest)
+    src.start(at)
+    src.stop(at + dur + 0.02)
+  }
+
+  // ------------------------------------------------------------- sequencer
+
+  playTune(tune: Tune, restart = true) {
+    this.ensure()
+    if (this.tune === tune && this.timer !== null && !restart) return
+    this.stopTune()
+    this.tune = tune
+    this.step = 0
+    this.nextStepTime = this.ctx!.currentTime + 0.08
+    this.timer = window.setInterval(() => this.schedule(), 25)
+  }
+
+  stopTune() {
+    if (this.timer !== null) window.clearInterval(this.timer)
+    this.timer = null
+    this.tune = null
+  }
+
+  get playing() {
+    return this.timer !== null
+  }
+
+  private schedule() {
+    const ctx = this.ctx
+    const tune = this.tune
+    if (!ctx || !tune) return
+    const stepDur = 60 / tune.bpm / tune.stepsPerBeat
+    const length = Math.max(...tune.tracks.map((t) => t.notes.length))
+
+    while (this.nextStepTime < ctx.currentTime + 0.2) {
+      for (const track of tune.tracks) {
+        const note = track.notes[this.step % track.notes.length]
+        if (!note || note === '.' || note === '=') continue
+
+        // A note runs until the next step that is not a sustain marker.
+        let held = 1
+        for (let i = 1; i < length; i++) {
+          if (track.notes[(this.step + i) % track.notes.length] === '=') held++
+          else break
+        }
+        const dur = held * stepDur * 0.95
+
+        if (track.wave === 'noise') {
+          this.percussion(this.musicBus, note, this.nextStepTime, track.gain)
+        } else {
+          const f = noteToFreq(note)
+          if (f) this.voice(this.musicBus, track.wave, f, this.nextStepTime, dur, track.gain)
+        }
+      }
+      this.nextStepTime += stepDur
+      this.step = (this.step + 1) % length
+    }
+  }
+
+  // ------------------------------------------------------------------ sfx
+
+  private seq(notes: [string, number][], wave: Wave = 'pulse25', gain = 0.22) {
+    const ctx = this.ensure()
+    let t = ctx.currentTime + 0.01
+    for (const [note, dur] of notes) {
+      if (note !== '.') this.voice(this.sfxBus, wave, noteToFreq(note), t, dur, gain)
+      t += dur
+    }
+  }
+
+  blip() {
+    this.seq([['E5', 0.05]], 'pulse12', 0.15)
+  }
+
+  select() {
+    this.seq([['C5', 0.05], ['G5', 0.09]], 'pulse25', 0.18)
+  }
+
+  reject() {
+    this.seq([['A3', 0.09], ['E3', 0.16]], 'saw', 0.2)
+  }
+
+  cash() {
+    this.seq([['C5', 0.07], ['E5', 0.07], ['G5', 0.07], ['C6', 0.22]], 'pulse25', 0.2)
+  }
+
+  sad() {
+    this.seq([['G4', 0.12], ['F#4', 0.12], ['F4', 0.12], ['E4', 0.4]], 'triangle', 0.22)
+  }
+
+  thunder() {
+    const ctx = this.ensure()
+    const at = ctx.currentTime + 0.01
+    const src = ctx.createBufferSource()
+    src.buffer = this.noiseBuffer
+    src.loop = true
+    const filter = ctx.createBiquadFilter()
+    filter.type = 'lowpass'
+    filter.frequency.setValueAtTime(1400, at)
+    filter.frequency.exponentialRampToValueAtTime(120, at + 1.4)
+    const env = ctx.createGain()
+    env.gain.setValueAtTime(0.0001, at)
+    env.gain.exponentialRampToValueAtTime(0.35, at + 0.05)
+    env.gain.exponentialRampToValueAtTime(0.0001, at + 1.5)
+    src.connect(filter).connect(env).connect(this.sfxBus)
+    src.start(at)
+    src.stop(at + 1.6)
+  }
+
+  sunshine() {
+    this.seq([['C5', 0.06], ['D5', 0.06], ['E5', 0.06], ['G5', 0.06], ['A5', 0.18]], 'pulse12', 0.16)
+  }
+
+  heat() {
+    const ctx = this.ensure()
+    const at = ctx.currentTime + 0.01
+    const osc = ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(300, at)
+    osc.frequency.exponentialRampToValueAtTime(900, at + 0.5)
+    const env = ctx.createGain()
+    env.gain.setValueAtTime(0.0001, at)
+    env.gain.exponentialRampToValueAtTime(0.2, at + 0.1)
+    env.gain.exponentialRampToValueAtTime(0.0001, at + 0.6)
+    osc.connect(env).connect(this.sfxBus)
+    osc.start(at)
+    osc.stop(at + 0.7)
+  }
+
+  fanfare() {
+    this.seq(
+      [['C5', 0.11], ['E5', 0.11], ['G5', 0.11], ['C6', 0.11], ['G5', 0.11], ['C6', 0.4]],
+      'pulse25',
+      0.2,
+    )
+  }
+}
+
+export const synth = new Synth()

@@ -1,0 +1,337 @@
+.app {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.cabinet {
+  /* Wide as the room allows, but never so wide that the 4:3 tube plus its
+     bezel and controls run off the bottom of the window. */
+  width: min(1000px, 100%, calc((100dvh - 175px) * 4 / 3));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ------------------------------------------------------------- the box */
+
+.bezel {
+  background: linear-gradient(180deg, #3a3d47 0%, #23252c 45%, #16171c 100%);
+  border-radius: 22px;
+  padding: clamp(12px, 2.4vw, 24px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 -2px 0 rgba(0, 0, 0, 0.6) inset,
+    0 24px 60px rgba(0, 0, 0, 0.65);
+}
+
+.screen {
+  position: relative;
+  /* An Atari 800 fed a 4:3 television. The picture never changed shape, so
+     neither does this one - it scales to the tube instead. */
+  aspect-ratio: 4 / 3;
+  /* Everything inside is sized in cqi, so the whole picture stays in
+     proportion no matter how big the set is. */
+  container-type: inline-size;
+  background: var(--atari-screen);
+  border: clamp(6px, 1.2vw, 12px) solid var(--atari-border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 2px #000,
+    0 0 60px rgba(70, 120, 255, 0.35),
+    0 0 120px rgba(40, 80, 220, 0.25) inset;
+  animation: power-on 900ms ease-out 1;
+}
+
+@keyframes power-on {
+  0% { filter: brightness(3) blur(2px); transform: scaleY(0.02); }
+  35% { filter: brightness(1.6) blur(1px); transform: scaleY(1); }
+  100% { filter: none; transform: none; }
+}
+
+.screen-inner {
+  position: relative;
+  z-index: 2;
+  --pad: 1.25em;
+  padding: var(--pad);
+  font-size: 2.15cqi;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--atari-text);
+  text-shadow: 0 0 6px rgba(150, 190, 255, 0.55);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  /* No scrollbars, ever - a television has none. */
+  overflow: hidden;
+}
+
+.screen-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.22) 0px,
+    rgba(0, 0, 0, 0.22) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(120% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* --------------------------------------------------------------- text */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  max-width: 46ch;
+  width: 100%;
+  height: max-content;
+  margin: auto;
+  transform: scale(var(--fit, 1));
+  transform-origin: center;
+}
+
+.line {
+  white-space: pre-wrap;
+  min-height: 1.4em;
+}
+
+.center { text-align: center; }
+.dim { color: #7f9adf; text-shadow: none; }
+.accent { color: var(--atari-yellow); text-shadow: 0 0 8px rgba(247, 222, 90, 0.5); }
+.warn { color: var(--atari-red); text-shadow: 0 0 8px rgba(255, 138, 122, 0.5); }
+.money { color: var(--atari-green); }
+
+.inv,
+.inv-line {
+  background: var(--atari-text);
+  color: var(--atari-screen-dark);
+  text-shadow: none;
+  padding: 0 0.4ch;
+}
+
+.inv-line {
+  display: block;
+  padding: 2px 0;
+}
+
+.blink { animation: blink 1.1s steps(1, end) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.banner {
+  margin: 0 auto;
+  font: inherit;
+  font-size: 0.56em;
+  line-height: 1.05;
+  margin-bottom: 0.5em;
+  letter-spacing: 0;
+  color: var(--atari-yellow);
+  text-shadow: 0 0 10px rgba(247, 222, 90, 0.6);
+  white-space: pre;
+}
+
+.banner.small { opacity: 0.35; font-size: 0.38em; }
+
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1ch;
+  background: var(--atari-text);
+  color: var(--atari-screen-dark);
+  text-shadow: none;
+  padding: 0.15em 0.7em;
+  margin: calc(-1 * var(--pad)) calc(-1 * var(--pad)) 0;
+  flex: 0 0 auto;
+  font-weight: 700;
+}
+
+/* -------------------------------------------------------------- scene */
+
+.scene {
+  display: block;
+  width: 100%;
+  max-width: 32ch;
+  margin: 0.5em auto;
+  border: 2px solid rgba(0, 0, 0, 0.5);
+  image-rendering: pixelated;
+  background: #000;
+}
+
+.stand-sign,
+.stand-price {
+  font-family: inherit;
+  fill: #b03a2e;
+  text-shadow: none;
+}
+
+.stand-sign { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+.stand-price { font-size: 8px; fill: #2b45b8; }
+
+.shimmer { animation: shimmer 2.4s ease-in-out infinite; }
+@keyframes shimmer {
+  0%, 100% { transform: translateY(0); opacity: 0.3; }
+  50% { transform: translateY(-3px); opacity: 0.55; }
+}
+
+.rain { animation: rain 0.5s linear infinite; }
+@keyframes rain {
+  from { transform: translateY(-14px); }
+  to { transform: translateY(0); }
+}
+
+.bolt { animation: bolt 3s steps(1, end) infinite; opacity: 0; }
+@keyframes bolt {
+  0%, 6% { opacity: 0; }
+  7%, 9% { opacity: 1; }
+  10%, 13% { opacity: 0; }
+  14%, 16% { opacity: 1; }
+  17%, 100% { opacity: 0; }
+}
+
+/* ------------------------------------------------------------- fields */
+
+.field {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 1ch;
+  padding: 0.1em 0;
+}
+
+.field-label { color: var(--atari-text); }
+
+.field-input {
+  width: 7ch;
+  font: inherit;
+  text-transform: uppercase;
+  text-align: right;
+  color: var(--atari-screen-dark);
+  background: var(--atari-text);
+  border: 0;
+  border-radius: 0.15em;
+  padding: 0.1em 0.3em;
+  outline: 0.13em solid transparent;
+}
+
+.field-input-name {
+  width: 14ch;
+  text-align: left;
+  justify-self: end;
+}
+
+.field-input::placeholder { color: #5a6ba8; }
+.field-input:focus { outline-color: var(--atari-yellow); }
+
+.field-note {
+  min-width: 7ch;
+  text-align: right;
+  color: var(--atari-yellow);
+}
+
+/* ------------------------------------------------------------ reports */
+
+.report-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5ch;
+}
+
+.report-label { white-space: nowrap; }
+
+.report-dots {
+  flex: 1;
+  border-bottom: 1px dotted rgba(185, 207, 255, 0.35);
+  transform: translateY(-0.25em);
+}
+
+.report-value { white-space: nowrap; }
+.report-row.strong { color: var(--atari-bright); font-weight: 700; }
+
+/* ------------------------------------------------------------ buttons */
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  align-items: center;
+  padding: 0.3em 0;
+}
+
+.row.center { justify-content: center; }
+
+.btn {
+  font: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  padding: 0.35em 0.85em;
+  border-radius: 0.25em;
+  border: 0.13em solid var(--atari-text);
+  background: transparent;
+  color: var(--atari-text);
+  transition: transform 60ms ease, background 120ms ease, color 120ms ease;
+}
+
+.btn:hover:not(:disabled) { background: rgba(185, 207, 255, 0.18); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--atari-yellow);
+  border-color: var(--atari-yellow);
+  color: #2a2000;
+  font-weight: 700;
+}
+
+.btn-primary:hover:not(:disabled) { background: #fff0a0; }
+
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-ghost {
+  border-color: #3d4453;
+  color: #8fa0c4;
+  background: #14161d;
+  padding: 5px 10px;
+  font-size: 0.85em;
+}
+
+.btn-ghost:hover:not(:disabled) { background: #1e222c; color: var(--atari-bright); }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: clamp(11px, 1.1vw, 14px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.seed { color: #566079; margin-left: auto; }
+
+@media (max-width: 560px) {
+  .seed { margin-left: 0; }
+}

@@ -1,0 +1,57 @@
+:root {
+  /* Atari 8-bit GR.0 defaults: dark border, blue field, light blue characters. */
+  --atari-border: #0a1030;
+  --atari-screen: #2b45b8;
+  --atari-screen-dark: #1d3193;
+  --atari-text: #b9cfff;
+  --atari-bright: #eaf2ff;
+  --atari-yellow: #f7de5a;
+  --atari-amber: #f0a13a;
+  --atari-red: #ff8a7a;
+  --atari-green: #8ef0a8;
+
+  color-scheme: dark;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* The root is a flex item of body; without this the cabinet shrinks to fit. */
+#root {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body {
+  background:
+    radial-gradient(120% 80% at 50% 0%, #1a1c26 0%, #0b0c12 55%, #050609 100%);
+  color: var(--atari-text);
+  font-family: ui-monospace, "DejaVu Sans Mono", "Cascadia Mono", "Courier New", monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(8px, 2vw, 28px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
