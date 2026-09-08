@@ -1,0 +1,73 @@
+# games.jcoffey.dev
+#
+# Three containers, one domain. The host's nginx does TLS and routes paths to
+# them; nothing is served off the host's disk.
+#
+#   /            -> games-hub        the list of games
+#   /lemonade/   -> lemonade-web     the game, a static bundle
+#   /api/        -> lemonade-scores  the shared leaderboard
+#
+# Run from the repository root:
+#   docker compose -f deploy/compose.yml up -d --build
+
+services:
+  games-hub:
+    build:
+      context: ..
+      dockerfile: hub/Dockerfile
+    image: games-hub:latest
+    container_name: games-hub
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:5186:8080'
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
+
+  lemonade-web:
+    build:
+      context: ..
+      dockerfile: web/Dockerfile
+      args:
+        # Must match the path the host proxies, or asset URLs will be wrong.
+        BASE_PATH: /lemonade/
+    image: lemonade-web:latest
+    container_name: lemonade-web
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:5185:8080'
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
+
+  lemonade-scores:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    image: lemonade-scores:latest
+    container_name: lemonade-scores
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:5184:5184'
+    environment:
+      TRUST_PROXY: '1'
+      DB_PATH: /data/scores.db
+    # The only writable path, and the only state that must survive a redeploy.
+    volumes:
+      - lemonade-scores-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  lemonade-scores-data:

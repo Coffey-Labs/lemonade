@@ -1,6 +1,6 @@
 import { STARTING_ASSETS } from './constants'
 import { isBankrupt } from './engine'
-import type { DayConditions, DayResult, Decision, Phase, Player } from './types'
+import type { CarryOver, DayConditions, DayResult, Decision, Phase, Player } from './types'
 
 export interface GameState {
   phase: Phase
@@ -13,8 +13,8 @@ export interface GameState {
   decisions: Record<number, Decision>
   results: DayResult[]
   history: DayResult[]
-  /** True while road works were in progress yesterday, so they can run on. */
-  streetCrewYesterday: boolean
+  /** Conditions in force yesterday, so the ones that persist can run on. */
+  yesterday: CarryOver
   retired: boolean
   /** Where the high score table was opened from, so BACK can return there. */
   scoresReturn: Phase
@@ -30,7 +30,7 @@ export const initialState = (seed: number, phase: Phase = 'boot'): GameState => 
   decisions: {},
   results: [],
   history: [],
-  streetCrewYesterday: false,
+  yesterday: { streetCrew: false, rival: false },
   retired: false,
   scoresReturn: 'title',
 })
@@ -117,7 +117,10 @@ export function reducer(state: GameState, action: Action): GameState {
         phase: 'trading',
         results: action.results,
         history: [...state.history, ...action.results],
-        streetCrewYesterday: state.conditions?.streetCrew ?? false,
+        yesterday: {
+          streetCrew: state.conditions?.streetCrew ?? false,
+          rival: state.conditions?.rival ?? false,
+        },
         players: state.players.map((p) => {
           const r = byId.get(p.id)
           if (!r) return p

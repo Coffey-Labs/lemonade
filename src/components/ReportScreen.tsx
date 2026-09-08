@@ -41,7 +41,9 @@ export function ReportScreen({
   const events = [
     WEATHER[conditions.weather].label,
     conditions.heatWave ? 'HEAT WAVE' : null,
+    conditions.festival ? 'SUMMER FAIR' : null,
     conditions.streetCrew ? 'STREET CREWS' : null,
+    conditions.rival ? 'RIVAL STAND' : null,
     conditions.storm ? 'THUNDERSTORM' : null,
   ]
     .filter(Boolean)

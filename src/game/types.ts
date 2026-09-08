@@ -20,10 +20,21 @@ export interface DayConditions {
   day: number
   weather: Weather
   heatWave: boolean
+  /** Road works. The street empties and they tend to stay a second day. */
   streetCrew: boolean
+  /** A town event: half of Lemonsville walks past, and in a spending mood. */
+  festival: boolean
+  /** Somebody else has set up on the next corner and takes a share. */
+  rival: boolean
   /** Only ever true on a cloudy day, and only revealed after decisions are locked in. */
   storm: boolean
   costPerGlass: number
+}
+
+/** Conditions that run on into tomorrow rather than being rolled fresh. */
+export interface CarryOver {
+  streetCrew: boolean
+  rival: boolean
 }
 
 export interface DayResult {

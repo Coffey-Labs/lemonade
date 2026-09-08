@@ -39,6 +39,22 @@ export function BriefingScreen({
           <Line className="warn">STREET.</Line>
         </>
       )}
+      {conditions.festival && (
+        <>
+          <Line />
+          <Line className="accent">THE SUMMER FAIR IS ON TODAY. HALF</Line>
+          <Line className="accent">THE TOWN WILL COME PAST, AND THEY</Line>
+          <Line className="accent">ARE OUT TO SPEND.</Line>
+        </>
+      )}
+      {conditions.rival && (
+        <>
+          <Line />
+          <Line className="warn">SOMEBODY HAS SET UP A STAND ON THE</Line>
+          <Line className="warn">NEXT CORNER. YOU WILL BE SPLITTING</Line>
+          <Line className="warn">THE STREET WITH THEM.</Line>
+        </>
+      )}
       <Line />
       <div className="row center">
         <Btn kind="primary" onClick={onContinue}>

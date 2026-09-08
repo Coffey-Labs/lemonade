@@ -110,7 +110,7 @@ function cloud(cx: number, cy: number, fill: string): Rect[] {
 }
 
 export function PixelScene({ conditions, price }: { conditions: DayConditions; price?: number }) {
-  const { weather, heatWave, streetCrew, storm } = conditions
+  const { weather, heatWave, streetCrew, festival, rival, storm } = conditions
 
   const sky = useMemo(() => {
     if (storm) return ['#2b3350', '#3d4468']
@@ -137,6 +137,27 @@ export function PixelScene({ conditions, price }: { conditions: DayConditions; p
   // Grass line under the stand.
   rects.push({ x: 0, y: ROWS - 1, w: COLS, fill: PALETTE.e })
   rects.push({ x: 0, y: ROWS - 2, w: COLS, fill: '#6fc258' })
+
+  if (festival) {
+    // A line of bunting strung above the stand.
+    for (let x = 2; x < COLS - 2; x += 2) {
+      rects.push({ x, y: 3 + (x % 4 === 0 ? 0 : 1), w: 1, fill: x % 4 === 0 ? PALETTE.r : PALETTE.Y })
+    }
+  }
+
+  if (rival) {
+    // A smaller stand further down the street.
+    rects.push(
+      { x: 33, y: 13, w: 6, fill: PALETTE.c },
+      { x: 33, y: 14, w: 6, fill: PALETTE.w },
+      { x: 33, y: 15, w: 1, fill: PALETTE.n },
+      { x: 38, y: 15, w: 1, fill: PALETTE.n },
+      { x: 33, y: 16, w: 6, fill: PALETTE.n },
+      { x: 33, y: 17, w: 6, fill: PALETTE.w },
+      { x: 33, y: 18, w: 1, fill: PALETTE.n },
+      { x: 38, y: 18, w: 1, fill: PALETTE.n },
+    )
+  }
 
   if (streetCrew) {
     // A pair of road cones and a barrier where the customers used to walk.

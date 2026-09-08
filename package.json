@@ -1,13 +1,15 @@
 {
-  "name": "lemonade",
+  "name": "lemonade-stand",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "scores": "node --watch server/src/index.ts",
+    "dev:all": "node scripts/dev-all.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -21,5 +23,8 @@
     "oxlint": "^1.79.0",
     "typescript": "~6.0.2",
     "vite": "^8.2.2"
-  }
+  },
+  "description": "A browser recreation of the Atari 8-bit BASIC classic, with a cel-shaded remaster.",
+  "license": "AGPL-3.0-or-later",
+  "author": "John Coffey"
 }

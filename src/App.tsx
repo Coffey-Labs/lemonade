@@ -5,16 +5,16 @@ import { synth } from './audio/synth'
 import { WEATHER } from './game/constants'
 import { dollars, randomSeed, rollDay, simulate } from './game/engine'
 import { makeRng, type Rng } from './game/rng'
-import { HIGH_SCORE_KEY, addScores, loadScores, type Score } from './game/highscores'
+import { fetchScores, submitScores, type Score } from './game/highscores'
 import { activePlayers, initialState, reducer } from './game/reducer'
-import type { Decision } from './game/types'
+import type { CarryOver, Decision } from './game/types'
 import { useSkin } from './skin'
 import { BootScreen } from './components/BootScreen'
 import { BriefingScreen } from './components/BriefingScreen'
 import { Btn, Crt, Fit } from './components/Crt'
 import { DecideScreen } from './components/DecideScreen'
 import { GameOverScreen } from './components/GameOverScreen'
-import { HighScoreScreen } from './components/HighScoreScreen'
+import { HighScoreScreen, type BoardState } from './components/HighScoreScreen'
 import { IntroScreen } from './components/IntroScreen'
 import { ReportScreen } from './components/ReportScreen'
 import { TradingScreen } from './components/TradingScreen'
@@ -30,7 +30,8 @@ export default function App() {
   const [sfx, setSfx] = useState(true)
   const started = useRef(false)
   const { skin, toggle: toggleSkin } = useSkin()
-  const [scores, setScores] = useState<Score[]>(loadScores)
+  const [scores, setScores] = useState<Score[]>([])
+  const [boardState, setBoardState] = useState<BoardState>('loading')
   const [freshScores, setFreshScores] = useState<string[]>([])
 
   const active = activePlayers(state)
@@ -65,17 +66,15 @@ export default function App() {
     synth.setSfx(sfx)
   }, [sfx])
 
-  /**
-   * Two tabs in one browser share localStorage. Nothing else is shared - the
-   * game itself lives entirely in the page - but the table should not go
-   * stale just because the other tab finished a season first.
-   */
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === HIGH_SCORE_KEY || e.key === null) setScores(loadScores())
+  /** The board lives in town, so it is fetched rather than remembered. */
+  const loadBoard = useCallback(async () => {
+    setBoardState('loading')
+    try {
+      setScores(await fetchScores())
+      setBoardState('ready')
+    } catch {
+      setBoardState('error')
     }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
   const blip = useCallback(() => synth.blip(), [])
@@ -101,8 +100,8 @@ export default function App() {
   // -------------------------------------------------------------- handlers
 
   const beginDay = useCallback(
-    (day: number, streetCrewYesterday: boolean) => {
-      const conditions = rollDay(day, rng.current, streetCrewYesterday)
+    (day: number, yesterday: CarryOver) => {
+      const conditions = rollDay(day, rng.current, yesterday)
       dispatch({ type: 'BEGIN_DAY', conditions })
       if (conditions.heatWave) synth.heat()
       else if (conditions.weather === 'sunny') synth.sunshine()
@@ -114,7 +113,7 @@ export default function App() {
     wake()
     synth.select()
     dispatch({ type: 'START', names })
-    beginDay(1, false)
+    beginDay(1, { streetCrew: false, rival: false })
   }
 
   const submit = (decision: Decision) => {
@@ -140,27 +139,36 @@ export default function App() {
   const nextDay = () => {
     synth.select()
     dispatch({ type: 'NEXT_DAY' })
-    beginDay(state.day + 1, state.streetCrewYesterday)
+    beginDay(state.day + 1, state.yesterday)
   }
 
-  /** Close the books: everyone who traded gets a line in the table. */
+  /**
+   * Close the books. The standings show straight away; posting to the town
+   * board happens behind them, so a slow or missing line out never holds the
+   * end of a season hostage.
+   */
   const retire = () => {
     synth.fanfare()
     const glassesFor = (id: number) =>
       state.history.reduce((n, r) => (r.playerId === id ? n + r.glassesSold : n), 0)
-    const { table, added } = addScores(
-      state.players.map((p) => ({
-        name: p.name,
-        assets: p.assets,
-        days: p.bankruptDay ?? state.day,
-        glasses: glassesFor(p.id),
-        seed: state.seed,
-        broke: p.bankrupt,
-      })),
-    )
-    setScores(table)
-    setFreshScores(added)
+    const entries = state.players.map((p) => ({
+      name: p.name,
+      assets: p.assets,
+      days: p.bankruptDay ?? state.day,
+      glasses: glassesFor(p.id),
+      seed: state.seed,
+      broke: p.bankrupt,
+    }))
+
     dispatch({ type: 'RETIRE' })
+    setBoardState('loading')
+    submitScores(entries)
+      .then(({ ids, scores: table }) => {
+        setScores(table)
+        setFreshScores(ids)
+        setBoardState('ready')
+      })
+      .catch(() => setBoardState('error'))
   }
 
   const restart = () => {
@@ -174,6 +182,7 @@ export default function App() {
     wake()
     synth.select()
     dispatch({ type: 'SHOW_SCORES' })
+    if (boardState !== 'ready') void loadBoard()
   }
 
   // ---------------------------------------------------------------- render
@@ -317,10 +326,15 @@ export default function App() {
           {state.phase === 'scores' && (
             <HighScoreScreen
               scores={scores}
+              state={boardState}
               highlight={freshScores}
               onBack={() => {
                 synth.select()
                 dispatch({ type: 'CLOSE_SCORES' })
+              }}
+              onRetry={() => {
+                synth.select()
+                void loadBoard()
               }}
             />
           )}

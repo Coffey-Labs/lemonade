@@ -63,6 +63,11 @@ export const HEAT_WAVE_TRAFFIC = 1.5
 export const HEAT_WAVE_CEILING = 1.25
 /** Street crews close the road; a handful of regulars still find you. */
 export const STREET_CREW_TRAFFIC = 0.2
+/** A fair or a parade: the whole town is out, and out to spend. */
+export const FESTIVAL_TRAFFIC = 1.9
+export const FESTIVAL_CEILING = 1.2
+/** A stand on the next corner takes a little under half the street. */
+export const RIVAL_TRAFFIC = 0.58
 
 /** Signs: +20% for the first, tailing off to a hard ceiling near +50%. */
 export function signFactor(signs: number): number {

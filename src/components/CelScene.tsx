@@ -86,7 +86,7 @@ export function CelScene({
   traffic?: number
   variant?: 'full' | 'strip'
 }) {
-  const { weather, heatWave, streetCrew, storm } = conditions
+  const { weather, heatWave, streetCrew, festival, rival, storm } = conditions
   const key = storm ? 'storm' : weather
   const m = MOODS[key] ?? MOODS.sunny
   const daylight = !storm && weather !== 'cloudy'
@@ -206,6 +206,19 @@ export function CelScene({
         <rect x="0" y="252" width="640" height="8" fill={m.groundShade} opacity="0.5" />
         <rect x="0" y="248" width="640" height="5" fill={INK} opacity="0.35" />
 
+        {/* --- the competition, small and further down the street ---- */}
+        {rival && (
+          <g stroke={INK} strokeWidth="3" strokeLinejoin="round" opacity="0.9">
+            <ellipse cx="566" cy="256" rx="52" ry="6" fill={INK} opacity={m.shadow} stroke="none" />
+            <rect x="524" y="208" width="7" height="48" fill="#9A6435" />
+            <rect x="601" y="208" width="7" height="48" fill="#9A6435" />
+            <path d="M516 190 H616 V206 q-12 12 -25 0 q-12 12 -25 0 q-12 12 -25 0 q-12 12 -25 0 Z" fill="#4FC3F7" />
+            <rect x="512" y="184" width="108" height="9" rx="4" fill="#E0A867" />
+            <rect x="518" y="230" width="96" height="12" rx="3" fill="#E0A867" />
+            <rect x="524" y="242" width="84" height="16" rx="3" fill="#FFF6DC" />
+          </g>
+        )}
+
         {/* --- the stand --------------------------------------------- */}
         <g stroke={INK} strokeWidth="4" strokeLinejoin="round">
           <ellipse cx="320" cy="286" rx="150" ry="13" fill={INK} opacity={m.shadow} stroke="none" />
@@ -279,6 +292,30 @@ export function CelScene({
             <rect x="160" y="100" width="320" height="14" rx="7" fill="#E0A867" />
           </g>
         </g>
+
+        {/* --- the fair ---------------------------------------------- */}
+        {festival && (
+          <g className="cel-bunting">
+            <path d="M-10 70 Q160 118 330 74 T670 84" fill="none" stroke={INK} strokeWidth="3" />
+            {Array.from({ length: 22 }, (_, i) => {
+              const t = i / 21
+              // Follows the same sag as the line above it.
+              const x = -10 + t * 680
+              const y = 70 + Math.sin(t * Math.PI * 2) * 6 + 34 * Math.sin(t * Math.PI)
+              const fill = ['#FF5D8F', '#FFD93D', '#2EC4B6', '#8E7DFF'][i % 4]
+              return (
+                <path
+                  key={i}
+                  d={`M${x - 8} ${y} L${x + 8} ${y} L${x} ${y + 17} Z`}
+                  fill={fill}
+                  stroke={INK}
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                />
+              )
+            })}
+          </g>
+        )}
 
         {/* --- the street ------------------------------------------- */}
         {walkers.map((w) => (

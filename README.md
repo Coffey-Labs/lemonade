@@ -38,6 +38,9 @@ pocket money.
   glass you made.
 - Street crews close the road now and then, and they tend to stay for a
   second day.
+- The summer fair brings half the town past your stand, in a spending mood.
+- A rival sometimes sets up on the next corner and takes a share of the
+  street until they get bored and move on.
 - Signs work, but with sharp diminishing returns — the fourth one barely
   earns its 15 cents.
 
@@ -50,21 +53,20 @@ as long as you like; **RETIRE** closes the books and shows the standings.
 
 ## High scores
 
-Retiring writes every player's closing balance to a top-ten table kept in
-`localStorage`, reachable from the title screen and from the standings. Runs
-from the summer you just finished are picked out in yellow. Ties break on the
-shorter season, then on the earlier date.
+One board, shared by everybody. Retiring posts every player's closing balance
+to the scores service, and the top 50 comes back ranked best first — ties break
+on the shorter season, then the earlier date. Runs from the summer you just
+finished are picked out in yellow.
 
-There is no way to clear the table. A stand leaves the list only by being
-pushed off the bottom by a better one, so a good summer stands until somebody
-beats it.
+There is no way to clear it. A stand leaves the list only by being pushed off
+the bottom by a better one, so a good summer stands until somebody beats it.
 
-The table is per-browser, not per-device, and it is the one piece of state the
-game keeps between visits. Anything already in storage can be edited by hand,
-so every field is validated on the way back in and malformed rows are dropped
-rather than trusted. If storage is unavailable — a private window, or a browser
-set to block site data — the game plays normally and the table simply stays
-empty.
+The board lives in `server/`, not in the browser, so it is the one part of the
+game that needs a line out. With the service unreachable the game plays exactly
+as normal and the board says so plainly rather than breaking; posting happens
+behind the closing standings, so a slow network never holds up the end of a
+season. See [server/README.md](server/README.md) for the API, the validation
+and what a board with no accounts can and cannot promise.
 
 ## How it is put together
 
@@ -110,8 +112,9 @@ than the tube, `Fit` scales it down rather than clipping or scrolling it.
 ### The people on the street
 
 How many figures walk on is driven by trade, not decoration. Before you have
-priced anything it comes from the forecast — a hot day fills the pavement, road
-works empty it, a downpour leaves one soul hurrying past under an umbrella.
+priced anything it comes from the forecast and the day's conditions — a hot day
+or the fair fills the pavement, road works and a rival empty it, a downpour
+leaves one soul hurrying past under an umbrella.
 Once the day has traded it comes from the glasses that actually crossed the
 counter, so the report shows you the crowd you earned. In a heat wave they fan
 themselves.
@@ -133,11 +136,44 @@ not stutter when React re-renders. `MUSIC` and `SOUND` toggle independently.
 
 ## Two people, two browsers
 
-There is no server and no shared state: the whole game is a static bundle and
-lives entirely in the page. Two people on two machines, two browsers, or two
-profiles are completely independent — different seeds, different weather,
-different books.
+The game itself is a static bundle and lives entirely in the page. Two people
+on two machines, two browsers or two profiles play completely independent
+games — different seeds, different weather, different books. Nothing about a
+season is shared or synchronised.
 
-The one thing two tabs in the *same* browser profile share is `localStorage`,
-which holds the high score table and the skin. They stay in step: each tab
-listens for the other's writes and refreshes rather than going stale.
+The only thing they have in common is the leaderboard they both post to at the
+end. The skin preference is the one thing still kept in the browser.
+
+## Deploying
+
+Three containers behind the host's nginx, which does TLS and routing and serves
+nothing off disk:
+
+| Path        | Container         | What it is                 |
+| ----------- | ----------------- | -------------------------- |
+| `/`         | `games-hub`       | the list of games          |
+| `/lemonade/`| `lemonade-web`    | this game, a static bundle |
+| `/api/`     | `lemonade-scores` | the shared leaderboard     |
+
+```bash
+docker compose -f deploy/compose.yml up -d --build
+```
+
+`deploy/nginx-host.conf.example` is the host-side server block. The game's
+asset paths are baked in at build time, so `BASE_PATH` in the compose file has
+to match the path nginx proxies it to. Only the scores container writes
+anything: a named volume holding the SQLite database, which is the one piece of
+state that must survive a redeploy.
+
+## Licence
+
+AGPL-3.0-or-later — see [LICENSE](LICENSE).
+
+Affero rather than plain GPL because the leaderboard is a network service:
+anyone running a modified copy of it for other people has to offer them the
+source. Running the game on its own imposes nothing extra.
+
+The simulation, the artwork and the music are original work. The game's *rules*
+are not anyone's property, and some of the on-screen wording is quoted from the
+1979 original as homage rather than authored here. [NOTICE.md](NOTICE.md) sets
+out exactly what came from where, and credits the people who wrote it first.

@@ -452,6 +452,12 @@ html[data-skin='modern'] .statusbar {
 .cel-sign { font-size: 21px; fill: #d1483f; letter-spacing: 0.5px; }
 .cel-price { font-size: 12px; fill: #5a3ea8; }
 
+.cel-bunting { animation: cel-bunting 5s ease-in-out infinite alternate; }
+@keyframes cel-bunting {
+  from { transform: translateY(0) rotate(-0.4deg); }
+  to { transform: translateY(3px) rotate(0.4deg); }
+}
+
 .cel-rays { animation: cel-spin 72s linear infinite; }
 @keyframes cel-spin { to { transform: rotate(360deg); } }
 
