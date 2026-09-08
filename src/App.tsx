@@ -4,7 +4,7 @@ import { synth } from './audio/synth'
 import { WEATHER } from './game/constants'
 import { dollars, randomSeed, rollDay, simulate } from './game/engine'
 import { makeRng, type Rng } from './game/rng'
-import { addScores, clearScores, loadScores, type Score } from './game/highscores'
+import { addScores, loadScores, type Score } from './game/highscores'
 import { activePlayers, initialState, reducer } from './game/reducer'
 import type { Decision } from './game/types'
 import { BriefingScreen } from './components/BriefingScreen'
@@ -267,8 +267,6 @@ export default function App() {
                 synth.select()
                 dispatch({ type: 'CLOSE_SCORES' })
               }}
-              onClear={() => setScores(clearScores())}
-              onBlip={blip}
             />
           )}
         </Fit>

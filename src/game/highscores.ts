@@ -67,7 +67,11 @@ const newId = () =>
     ? crypto.randomUUID()
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 
-/** Returns the saved table and the ids of the entries this call added. */
+/**
+ * Returns the saved table and the ids of the entries this call added. The
+ * table only ever loses a row by being pushed past MAX_SCORES by a better
+ * one - there is no way to clear it.
+ */
 export function addScores(entries: NewScore[]): { table: Score[]; added: string[] } {
   const at = Date.now()
   const fresh: Score[] = entries.map((e) => ({ ...e, id: newId(), at }))
@@ -75,13 +79,4 @@ export function addScores(entries: NewScore[]): { table: Score[]; added: string[
   persist(table)
   const kept = new Set(table.map((s) => s.id))
   return { table, added: fresh.filter((s) => kept.has(s.id)).map((s) => s.id) }
-}
-
-export function clearScores(): Score[] {
-  try {
-    window.localStorage.removeItem(KEY)
-  } catch {
-    // Ignored - the table is rendered from the return value either way.
-  }
-  return []
 }

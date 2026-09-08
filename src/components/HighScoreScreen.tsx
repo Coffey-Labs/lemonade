@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { dollars } from '../game/engine'
 import { MAX_SCORES, type Score } from '../game/highscores'
 import { Btn, Line } from './Crt'
@@ -10,16 +9,11 @@ export function HighScoreScreen({
   scores,
   highlight,
   onBack,
-  onClear,
-  onBlip,
 }: {
   scores: Score[]
   highlight: string[]
   onBack: () => void
-  onClear: () => void
-  onBlip: () => void
 }) {
-  const [confirming, setConfirming] = useState(false)
   const fresh = new Set(highlight)
 
   return (
@@ -52,26 +46,12 @@ export function HighScoreScreen({
 
       <Line />
       <Line className="center dim">TOP {MAX_SCORES}, KEPT IN THIS BROWSER.</Line>
+      <Line className="center dim">A STAND LEAVES ONLY BY BEING BEATEN.</Line>
       <Line />
       <div className="row center">
         <Btn kind="primary" onClick={onBack}>
           BACK
         </Btn>
-        {scores.length > 0 && (
-          <Btn
-            onClick={() => {
-              onBlip()
-              if (confirming) {
-                onClear()
-                setConfirming(false)
-              } else {
-                setConfirming(true)
-              }
-            }}
-          >
-            {confirming ? 'REALLY WIPE?' : 'WIPE TABLE'}
-          </Btn>
-        )}
       </div>
     </div>
   )

@@ -41,12 +41,16 @@ Retiring writes every player's closing balance to a top-ten table kept in
 from the summer you just finished are picked out in yellow. Ties break on the
 shorter season, then on the earlier date.
 
+There is no way to clear the table. A stand leaves the list only by being
+pushed off the bottom by a better one, so a good summer stands until somebody
+beats it.
+
 The table is per-browser, not per-device, and it is the one piece of state the
 game keeps between visits. Anything already in storage can be edited by hand,
 so every field is validated on the way back in and malformed rows are dropped
 rather than trusted. If storage is unavailable — a private window, or a browser
 set to block site data — the game plays normally and the table simply stays
-empty. **WIPE TABLE** clears it, and asks once before it does.
+empty.
 
 ## How it is put together
 
