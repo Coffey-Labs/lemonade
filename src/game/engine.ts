@@ -91,6 +91,21 @@ export function isBankrupt(assets: number, nextDay: number): boolean {
   return assets < costPerGlass(nextDay)
 }
 
+/**
+ * How busy the street looks before anyone has priced anything - used to
+ * decide how many people walk on. Not part of the simulation.
+ */
+export function streetBusyness(cond: DayConditions): number {
+  if (cond.storm) return 0.18
+  const base = WEATHER[cond.weather].traffic / 140
+  const heat = cond.heatWave ? 1.35 : 1
+  const crew = cond.streetCrew ? 0.2 : 1
+  return Math.max(0, Math.min(1, base * heat * crew))
+}
+
+/** How busy it actually was, from the glasses that crossed the counter. */
+export const soldBusyness = (sold: number) => Math.max(0, Math.min(1, sold / 55))
+
 export const dollars = (cents: number): string => {
   const sign = cents < 0 ? '-' : ''
   const abs = Math.abs(cents)

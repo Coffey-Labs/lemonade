@@ -36,14 +36,25 @@ body,
 }
 
 body {
-  background:
-    radial-gradient(120% 80% at 50% 0%, #1a1c26 0%, #0b0c12 55%, #050609 100%);
+  background: radial-gradient(120% 80% at 50% 0%, #1a1c26 0%, #0b0c12 55%, #050609 100%);
   color: var(--atari-text);
   font-family: ui-monospace, "DejaVu Sans Mono", "Cascadia Mono", "Courier New", monospace;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: clamp(8px, 2vw, 28px);
+  transition: background 400ms ease;
+}
+
+/* The room the modern cabinet stands in: warmer, deeper, a little neon. */
+html[data-skin='modern'] body {
+  background:
+    radial-gradient(90% 60% at 15% 0%, rgba(255, 93, 143, 0.28) 0%, transparent 60%),
+    radial-gradient(80% 60% at 90% 15%, rgba(46, 196, 182, 0.24) 0%, transparent 55%),
+    radial-gradient(120% 90% at 50% 100%, #3a2168 0%, #1d1136 55%, #0e0820 100%);
+  color: #fff6e6;
+  font-family:
+    ui-rounded, "Nunito", "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
 @media (prefers-reduced-motion: reduce) {

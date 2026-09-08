@@ -20,8 +20,8 @@ export interface GameState {
   scoresReturn: Phase
 }
 
-export const initialState = (seed: number): GameState => ({
-  phase: 'title',
+export const initialState = (seed: number, phase: Phase = 'boot'): GameState => ({
+  phase,
   seed,
   day: 0,
   players: [],
@@ -36,6 +36,7 @@ export const initialState = (seed: number): GameState => ({
 })
 
 export type Action =
+  | { type: 'BOOTED' }
   | { type: 'SHOW_INTRO' }
   | { type: 'SHOW_SETUP' }
   | { type: 'START'; names: string[] }
@@ -43,6 +44,7 @@ export type Action =
   | { type: 'OPEN_STAND' }
   | { type: 'SUBMIT'; playerId: number; decision: Decision }
   | { type: 'RESOLVE'; results: DayResult[] }
+  | { type: 'SHOW_REPORT' }
   | { type: 'NEXT_DAY' }
   | { type: 'RETIRE' }
   | { type: 'SHOW_SCORES' }
@@ -54,6 +56,9 @@ export const activePlayers = (s: GameState) => s.players.filter((p) => !p.bankru
 
 export function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
+    case 'BOOTED':
+      return { ...state, phase: 'title' }
+
     case 'SHOW_INTRO':
       return { ...state, phase: 'intro' }
 
@@ -108,7 +113,8 @@ export function reducer(state: GameState, action: Action): GameState {
       const nextDay = state.day + 1
       return {
         ...state,
-        phase: 'report',
+        // The stand trades before the books are opened.
+        phase: 'trading',
         results: action.results,
         history: [...state.history, ...action.results],
         streetCrewYesterday: state.conditions?.streetCrew ?? false,
@@ -127,6 +133,9 @@ export function reducer(state: GameState, action: Action): GameState {
       }
     }
 
+    case 'SHOW_REPORT':
+      return { ...state, phase: 'report' }
+
     case 'NEXT_DAY': {
       if (activePlayers(state).length === 0) return { ...state, phase: 'gameover' }
       return { ...state, phase: 'briefing', day: state.day + 1, turn: 0 }
@@ -144,7 +153,8 @@ export function reducer(state: GameState, action: Action): GameState {
       return { ...state, phase: state.scoresReturn }
 
     case 'RESTART':
-      return initialState(action.seed)
+      // The tape only loads once a session; a new game starts at the title.
+      return initialState(action.seed, 'title')
 
     default:
       return state

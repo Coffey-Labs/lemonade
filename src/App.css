@@ -1,3 +1,60 @@
+/* =====================================================================
+   Two skins, one game. Layout is shared; every colour and every piece of
+   chrome comes from a token that the skin swaps.
+   ===================================================================== */
+
+:root {
+  /* --- 1979 --------------------------------------------------------- */
+  --ink: var(--atari-text);
+  --ink-dim: #7f9adf;
+  --ink-bright: var(--atari-bright);
+  --accent: var(--atari-yellow);
+  --warn: var(--atari-red);
+  --money: var(--atari-green);
+  --outline: #000;
+  --screen-bg: var(--atari-screen);
+  --screen-radius: 14px;
+  --bar-bg: var(--atari-text);
+  --bar-fg: var(--atari-screen-dark);
+  --dots: rgba(185, 207, 255, 0.35);
+  --glow: 0 0 6px rgba(150, 190, 255, 0.55);
+  --btn-radius: 0.25em;
+  --btn-shadow: none;
+  --field-bg: var(--atari-text);
+  --field-fg: var(--atari-screen-dark);
+  --scene-radius: 0;
+  --scene-border: 2px solid rgba(0, 0, 0, 0.5);
+  --scene-shadow: none;
+}
+
+html[data-skin='modern'] {
+  /* --- now ---------------------------------------------------------- */
+  --ink: #fff6e6;
+  --ink-dim: #b9a9e0;
+  --ink-bright: #ffffff;
+  --accent: #ffd93d;
+  --warn: #ff7a9c;
+  --money: #7be495;
+  --outline: #241640;
+  --screen-bg: linear-gradient(170deg, #4a2d86 0%, #341e63 45%, #24144a 100%);
+  --screen-radius: 26px;
+  --bar-bg: #ffd93d;
+  --bar-fg: #241640;
+  --dots: rgba(185, 169, 224, 0.4);
+  --glow: none;
+  --btn-radius: 999px;
+  --btn-shadow: 4px 4px 0 var(--outline);
+  --field-bg: #fff6e6;
+  --field-fg: #241640;
+  --scene-radius: 18px;
+  --scene-border: 4px solid var(--outline);
+  --scene-shadow: 6px 6px 0 rgba(36, 22, 64, 0.55);
+}
+
+/* =====================================================================
+   Layout
+   ===================================================================== */
+
 .app {
   flex: 1;
   width: 100%;
@@ -14,8 +71,6 @@
   gap: 14px;
 }
 
-/* ------------------------------------------------------------- the box */
-
 .bezel {
   background: linear-gradient(180deg, #3a3d47 0%, #23252c 45%, #16171c 100%);
   border-radius: 22px;
@@ -24,6 +79,18 @@
     0 1px 0 rgba(255, 255, 255, 0.14) inset,
     0 -2px 0 rgba(0, 0, 0, 0.6) inset,
     0 24px 60px rgba(0, 0, 0, 0.65);
+  transition: background 400ms ease, box-shadow 400ms ease;
+}
+
+html[data-skin='modern'] .bezel {
+  background: linear-gradient(165deg, #6d4bb0 0%, #422a7d 55%, #2b1a55 100%);
+  border-radius: 34px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.22) inset,
+    0 -3px 0 rgba(0, 0, 0, 0.4) inset,
+    0 0 0 3px var(--outline),
+    0 30px 70px rgba(10, 4, 26, 0.7),
+    0 0 90px rgba(255, 93, 143, 0.22);
 }
 
 .screen {
@@ -34,15 +101,23 @@
   /* Everything inside is sized in cqi, so the whole picture stays in
      proportion no matter how big the set is. */
   container-type: inline-size;
-  background: var(--atari-screen);
+  background: var(--screen-bg);
   border: clamp(6px, 1.2vw, 12px) solid var(--atari-border);
-  border-radius: 14px;
+  border-radius: var(--screen-radius);
   overflow: hidden;
   box-shadow:
     0 0 0 2px #000,
     0 0 60px rgba(70, 120, 255, 0.35),
     0 0 120px rgba(40, 80, 220, 0.25) inset;
   animation: power-on 900ms ease-out 1;
+  transition: border-radius 400ms ease;
+}
+
+html[data-skin='modern'] .screen {
+  border-color: var(--outline);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.08) inset,
+    0 20px 50px rgba(10, 4, 26, 0.55);
 }
 
 @keyframes power-on {
@@ -52,22 +127,26 @@
 }
 
 .screen-inner {
-  position: relative;
-  z-index: 2;
   --pad: 1.25em;
+  position: absolute;
+  inset: 0;
   padding: var(--pad);
   font-size: 2.15cqi;
   line-height: 1.4;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--atari-text);
-  text-shadow: 0 0 6px rgba(150, 190, 255, 0.55);
-  position: absolute;
-  inset: 0;
+  color: var(--ink);
+  text-shadow: var(--glow);
   display: flex;
   flex-direction: column;
   /* No scrollbars, ever - a television has none. */
   overflow: hidden;
+}
+
+html[data-skin='modern'] .screen-inner {
+  letter-spacing: 0.01em;
+  font-size: 2.2cqi;
+  font-variant-numeric: tabular-nums;
 }
 
 .screen-body {
@@ -76,6 +155,22 @@
   display: flex;
   overflow: hidden;
 }
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  max-width: 46ch;
+  width: 100%;
+  height: max-content;
+  margin: auto;
+  transform: scale(var(--fit, 1));
+  /* Scale from the top edge: flex auto-margins collapse to zero once the
+     content overflows, so a centre origin would push the page off the
+     bottom instead of shrinking it into view. */
+  transform-origin: center top;
+}
+
+html[data-skin='modern'] .stack { max-width: 44ch; }
 
 .scanlines {
   position: absolute;
@@ -100,18 +195,70 @@
   background: radial-gradient(120% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
 }
 
-/* --------------------------------------------------------------- text */
+/* The modern set is a flat panel: no phosphor, no glass curvature. */
+html[data-skin='modern'] .scanlines { opacity: 0.12; mix-blend-mode: overlay; }
+html[data-skin='modern'] .vignette { opacity: 0.35; }
 
-.stack {
+/* =====================================================================
+   Cassette boot - always the 1979 machine, whichever skin is loaded
+   ===================================================================== */
+
+.boot {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--atari-screen);
+  color: var(--atari-text);
+  font-family: ui-monospace, "DejaVu Sans Mono", "Cascadia Mono", "Courier New", monospace;
+  font-size: 2.4cqi;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(150, 190, 255, 0.55);
   display: flex;
   flex-direction: column;
-  max-width: 46ch;
-  width: 100%;
-  height: max-content;
-  margin: auto;
-  transform: scale(var(--fit, 1));
-  transform-origin: center;
+  justify-content: center;
+  padding: 2.2em;
+  overflow: hidden;
 }
+
+.boot-text { position: relative; z-index: 2; }
+
+.boot-cursor { animation: blink 0.55s steps(1, end) infinite; }
+
+/* The bands a tape loader threw up the screen while the data came in. */
+.boot-stripes {
+  position: absolute;
+  inset: -20%;
+  z-index: 1;
+  opacity: 0.55;
+  background: repeating-linear-gradient(
+    0deg,
+    #f7de5a 0px, #f7de5a 7px,
+    #2b45b8 7px, #2b45b8 12px,
+    #8ef0a8 12px, #8ef0a8 16px,
+    #ff8a7a 16px, #ff8a7a 23px,
+    #b9cfff 23px, #b9cfff 27px
+  );
+  animation: boot-stripes 0.28s linear infinite;
+}
+
+@keyframes boot-stripes {
+  from { transform: translateY(0); }
+  to { transform: translateY(-27px); }
+}
+
+.boot-controls {
+  position: relative;
+  z-index: 2;
+  margin-top: 1.6em;
+  display: flex;
+  gap: 0.6em;
+}
+
+/* =====================================================================
+   Text
+   ===================================================================== */
 
 .line {
   white-space: pre-wrap;
@@ -119,21 +266,40 @@
 }
 
 .center { text-align: center; }
-.dim { color: #7f9adf; text-shadow: none; }
-.accent { color: var(--atari-yellow); text-shadow: 0 0 8px rgba(247, 222, 90, 0.5); }
-.warn { color: var(--atari-red); text-shadow: 0 0 8px rgba(255, 138, 122, 0.5); }
-.money { color: var(--atari-green); }
 
-.inv-line {
-  background: var(--atari-text);
-  color: var(--atari-screen-dark);
-  text-shadow: none;
-  padding: 0 0.4ch;
+/* Reserved space for a message that comes and goes without a jolt. */
+.hint {
+  opacity: 0;
+  transition: opacity 160ms ease;
 }
+
+.hint.is-on { opacity: 1; }
+.dim { color: var(--ink-dim); text-shadow: none; }
+.accent { color: var(--accent); text-shadow: 0 0 8px rgba(247, 222, 90, 0.5); }
+.warn { color: var(--warn); text-shadow: 0 0 8px rgba(255, 138, 122, 0.5); }
+.money { color: var(--money); }
+
+html[data-skin='modern'] .accent,
+html[data-skin='modern'] .warn { text-shadow: none; font-weight: 800; }
 
 .inv-line {
   display: block;
+  background: var(--bar-bg);
+  color: var(--bar-fg);
+  text-shadow: none;
   padding: 2px 0;
+}
+
+html[data-skin='modern'] .inv-line {
+  border-radius: 999px;
+  padding: 0.3em 1.1em;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  border: 3px solid var(--outline);
+  box-shadow: 4px 4px 0 var(--outline);
+  width: fit-content;
+  /* Clears the drop shadow, so a two-line heading never touches the art. */
+  margin: 0 auto 0.5em;
 }
 
 .blink { animation: blink 1.1s steps(1, end) infinite; }
@@ -146,19 +312,51 @@
   line-height: 1.05;
   margin-bottom: 0.5em;
   letter-spacing: 0;
-  color: var(--atari-yellow);
+  color: var(--accent);
   text-shadow: 0 0 10px rgba(247, 222, 90, 0.6);
   white-space: pre;
 }
 
 .banner.small { opacity: 0.35; font-size: 0.38em; }
 
+/* The modern wordmark, in place of the block-letter banner. */
+.wordmark {
+  text-align: center;
+  line-height: 0.92;
+  margin-bottom: 0.4em;
+}
+
+.wordmark b {
+  display: block;
+  font-size: 2.6em;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  -webkit-text-stroke: 3px var(--outline);
+  paint-order: stroke fill;
+  text-shadow: 5px 5px 0 var(--outline);
+}
+
+.wordmark span {
+  display: block;
+  font-size: 0.95em;
+  font-weight: 800;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  color: #ff5d8f;
+  -webkit-text-stroke: 2px var(--outline);
+  paint-order: stroke fill;
+}
+
+.wordmark.small b { font-size: 1.5em; opacity: 0.85; }
+.wordmark.small span { font-size: 0.7em; }
+
 .statusbar {
   display: flex;
   justify-content: space-between;
   gap: 1ch;
-  background: var(--atari-text);
-  color: var(--atari-screen-dark);
+  background: var(--bar-bg);
+  color: var(--bar-fg);
   text-shadow: none;
   padding: 0.15em 0.7em;
   margin: calc(-1 * var(--pad)) calc(-1 * var(--pad)) 0;
@@ -166,16 +364,47 @@
   font-weight: 700;
 }
 
-/* -------------------------------------------------------------- scene */
+html[data-skin='modern'] .statusbar {
+  font-weight: 900;
+  border-bottom: 3px solid var(--outline);
+}
 
-.scene {
+/* =====================================================================
+   Scenes
+   ===================================================================== */
+
+.scene,
+.cel {
   display: block;
   width: 100%;
   max-width: 32ch;
   margin: 0.5em auto;
-  border: 2px solid rgba(0, 0, 0, 0.5);
+  border: var(--scene-border);
+  border-radius: var(--scene-radius);
+  box-shadow: var(--scene-shadow);
   image-rendering: pixelated;
   background: #000;
+}
+
+.cel {
+  /* The art is the point of the remaster: let it run the full width, and
+     bleed a little past the text column. */
+  max-width: none;
+  width: calc(100% + 2 * var(--pad));
+  margin: 0.2em calc(-1 * var(--pad)) 0.5em;
+  image-rendering: auto;
+  background: transparent;
+  border-radius: 0;
+  margin-top: 0.35em;
+  border-left: 0;
+  border-right: 0;
+  box-shadow: none;
+}
+
+/* Cropped to the counter and the pavement, for screens short on room. */
+.cel.cel-strip {
+  aspect-ratio: 640 / 124;
+  height: auto;
 }
 
 .stand-sign,
@@ -209,7 +438,111 @@
   17%, 100% { opacity: 0; }
 }
 
-/* ------------------------------------------------------------- fields */
+/* ---------------------------------------------------------- cel scene */
+
+.cel-sign,
+.cel-price {
+  font-family: inherit;
+  font-weight: 900;
+  text-transform: uppercase;
+  stroke: none;
+  text-shadow: none;
+}
+
+.cel-sign { font-size: 21px; fill: #d1483f; letter-spacing: 0.5px; }
+.cel-price { font-size: 12px; fill: #5a3ea8; }
+
+.cel-rays { animation: cel-spin 72s linear infinite; }
+@keyframes cel-spin { to { transform: rotate(360deg); } }
+
+.cel-clouds { animation: cel-drift 26s ease-in-out infinite alternate; }
+@keyframes cel-drift {
+  from { transform: translateX(-14px); }
+  to { transform: translateX(14px); }
+}
+
+/* One pair of keyframes serves every figure; --stop places the queue spot. */
+.cel-walker {
+  animation-name: cel-walk-left;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.cel-walker.from-right { animation-name: cel-walk-right; }
+.cel-walker.is-hurrying.from-left { animation-name: cel-hurry-left; }
+.cel-walker.is-hurrying.from-right { animation-name: cel-hurry-right; }
+
+/* People come to the stand from their own side and leave the way they came,
+   so nobody parks in front of the sign. */
+@keyframes cel-walk-left {
+  0% { transform: translateX(-150px); }
+  24% { transform: translateX(var(--stop)); }
+  72% { transform: translateX(var(--stop)); }
+  100% { transform: translateX(-150px); }
+}
+
+@keyframes cel-walk-right {
+  0% { transform: translateX(800px); }
+  24% { transform: translateX(var(--stop)); }
+  72% { transform: translateX(var(--stop)); }
+  100% { transform: translateX(800px); }
+}
+
+@keyframes cel-hurry-left {
+  from { transform: translateX(-150px); }
+  to { transform: translateX(800px); }
+}
+
+@keyframes cel-hurry-right {
+  from { transform: translateX(800px); }
+  to { transform: translateX(-150px); }
+}
+
+.cel-bob { animation: cel-bob 0.46s ease-in-out infinite alternate; }
+@keyframes cel-bob {
+  from { transform: translateY(0); }
+  to { transform: translateY(-3px); }
+}
+
+.leg-a,
+.leg-b { animation: cel-step 0.46s ease-in-out infinite alternate; }
+.leg-a { transform-origin: -6px 272px; }
+.leg-b { transform-origin: 6px 272px; animation-direction: alternate-reverse; }
+
+@keyframes cel-step {
+  from { transform: rotate(-20deg); }
+  to { transform: rotate(20deg); }
+}
+
+.cel-fan { transform-origin: 16px 240px; animation: cel-fan 0.3s ease-in-out infinite alternate; }
+@keyframes cel-fan {
+  from { transform: rotate(-24deg); }
+  to { transform: rotate(24deg); }
+}
+
+.cel-rain { animation: cel-rain 0.42s linear infinite; }
+@keyframes cel-rain {
+  from { transform: translate(9px, -30px); }
+  to { transform: translate(0, 0); }
+}
+
+.cel-bolt { opacity: 0; animation: bolt 4.5s steps(1, end) infinite; }
+.cel-flash { opacity: 0; animation: cel-flash 4.5s steps(1, end) infinite; }
+@keyframes cel-flash {
+  0%, 6% { opacity: 0; }
+  7%, 8% { opacity: 0.55; }
+  9%, 100% { opacity: 0; }
+}
+
+.cel-shimmer { animation: cel-heat 3.2s ease-in-out infinite alternate; }
+@keyframes cel-heat {
+  from { transform: translateX(-10px); opacity: 0.32; }
+  to { transform: translateX(10px); opacity: 0.6; }
+}
+
+/* =====================================================================
+   Fields, reports, buttons
+   ===================================================================== */
 
 .field {
   display: grid;
@@ -219,19 +552,26 @@
   padding: 0.1em 0;
 }
 
-.field-label { color: var(--atari-text); }
+.field-label { color: var(--ink); }
 
 .field-input {
   width: 7ch;
   font: inherit;
   text-transform: uppercase;
   text-align: right;
-  color: var(--atari-screen-dark);
-  background: var(--atari-text);
+  color: var(--field-fg);
+  background: var(--field-bg);
   border: 0;
   border-radius: 0.15em;
   padding: 0.1em 0.3em;
   outline: 0.13em solid transparent;
+}
+
+html[data-skin='modern'] .field-input {
+  border-radius: 0.5em;
+  border: 3px solid var(--outline);
+  font-weight: 800;
+  box-shadow: 3px 3px 0 var(--outline);
 }
 
 .field-input-name {
@@ -241,15 +581,13 @@
 }
 
 .field-input::placeholder { color: #5a6ba8; }
-.field-input:focus { outline-color: var(--atari-yellow); }
+.field-input:focus { outline-color: var(--accent); }
 
 .field-note {
   min-width: 7ch;
   text-align: right;
-  color: var(--atari-yellow);
+  color: var(--accent);
 }
-
-/* ------------------------------------------------------------ reports */
 
 .report-row {
   display: flex;
@@ -261,14 +599,12 @@
 
 .report-dots {
   flex: 1;
-  border-bottom: 1px dotted rgba(185, 207, 255, 0.35);
+  border-bottom: 1px dotted var(--dots);
   transform: translateY(-0.25em);
 }
 
 .report-value { white-space: nowrap; }
-.report-row.strong { color: var(--atari-bright); font-weight: 700; }
-
-/* ------------------------------------------------------- high scores */
+.report-row.strong { color: var(--ink-bright); font-weight: 700; }
 
 .score-days {
   white-space: nowrap;
@@ -276,18 +612,38 @@
   padding-right: 0.8ch;
 }
 
-/* Runs added by the summer just finished. */
 .score-row.is-new,
 .score-row.is-new .report-value,
 .score-row.is-new .score-days {
-  color: var(--atari-yellow);
+  color: var(--accent);
   text-shadow: 0 0 8px rgba(247, 222, 90, 0.45);
   font-weight: 700;
 }
 
 .score-row.is-new .report-dots { border-bottom-color: rgba(247, 222, 90, 0.4); }
 
-/* ------------------------------------------------------------ buttons */
+/* The day's takings filling up while the stand trades. */
+.till {
+  height: 0.5em;
+  margin: 0.35em auto 0.2em;
+  width: 70%;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  overflow: hidden;
+  opacity: 0.7;
+}
+
+.till span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+html[data-skin='modern'] .till {
+  border: 3px solid var(--outline);
+  opacity: 1;
+  box-shadow: 3px 3px 0 var(--outline);
+}
 
 .row {
   display: flex;
@@ -297,7 +653,10 @@
   padding: 0.3em 0;
 }
 
-.row.center { justify-content: center; }
+.row.center {
+  justify-content: center;
+  margin-top: 0.4em;
+}
 
 .btn {
   font: inherit;
@@ -305,10 +664,10 @@
   letter-spacing: 0.06em;
   cursor: pointer;
   padding: 0.35em 0.85em;
-  border-radius: 0.25em;
-  border: 0.13em solid var(--atari-text);
+  border-radius: var(--btn-radius);
+  border: 0.13em solid var(--ink);
   background: transparent;
-  color: var(--atari-text);
+  color: var(--ink);
   transition: transform 60ms ease, background 120ms ease, color 120ms ease;
 }
 
@@ -316,15 +675,34 @@
 .btn:active:not(:disabled) { transform: translateY(1px); }
 
 .btn-primary {
-  background: var(--atari-yellow);
-  border-color: var(--atari-yellow);
+  background: var(--accent);
+  border-color: var(--accent);
   color: #2a2000;
   font-weight: 700;
 }
 
 .btn-primary:hover:not(:disabled) { background: #fff0a0; }
-
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Modern buttons are stickers: flat fill, hard outline, hard offset shadow. */
+html[data-skin='modern'] .btn {
+  border: 3px solid var(--outline);
+  background: #ffffff;
+  color: var(--outline);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  box-shadow: var(--btn-shadow);
+}
+
+html[data-skin='modern'] .btn:hover:not(:disabled) { background: #ffe9c9; }
+
+html[data-skin='modern'] .btn:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--outline);
+}
+
+html[data-skin='modern'] .btn-primary { background: var(--accent); }
+html[data-skin='modern'] .btn-primary:hover:not(:disabled) { background: #ffe884; }
 
 .btn-ghost {
   border-color: #3d4453;
@@ -335,6 +713,24 @@
 }
 
 .btn-ghost:hover:not(:disabled) { background: #1e222c; color: var(--atari-bright); }
+
+html[data-skin='modern'] .btn-ghost {
+  background: rgba(255, 246, 230, 0.1);
+  border: 2px solid rgba(255, 246, 230, 0.28);
+  color: #e7dcff;
+  box-shadow: none;
+  border-radius: 999px;
+}
+
+html[data-skin='modern'] .btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 246, 230, 0.2);
+  color: #fff;
+}
+
+html[data-skin='modern'] .btn-ghost:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
 
 .controls {
   display: flex;
@@ -349,6 +745,7 @@
 }
 
 .seed { color: #566079; margin-left: auto; }
+html[data-skin='modern'] .seed { color: #9b8ac4; }
 
 @media (max-width: 560px) {
   .seed { margin-left: 0; }

@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { FUNK_DAY, FUNK_END, FUNK_TITLE } from './audio/funk'
 import { DAY_TUNE, END_TUNE, TITLE_TUNE } from './audio/tunes'
 import { synth } from './audio/synth'
 import { WEATHER } from './game/constants'
 import { dollars, randomSeed, rollDay, simulate } from './game/engine'
 import { makeRng, type Rng } from './game/rng'
-import { addScores, loadScores, type Score } from './game/highscores'
+import { HIGH_SCORE_KEY, addScores, loadScores, type Score } from './game/highscores'
 import { activePlayers, initialState, reducer } from './game/reducer'
 import type { Decision } from './game/types'
+import { useSkin } from './skin'
+import { BootScreen } from './components/BootScreen'
 import { BriefingScreen } from './components/BriefingScreen'
 import { Btn, Crt, Fit } from './components/Crt'
 import { DecideScreen } from './components/DecideScreen'
@@ -14,6 +17,7 @@ import { GameOverScreen } from './components/GameOverScreen'
 import { HighScoreScreen } from './components/HighScoreScreen'
 import { IntroScreen } from './components/IntroScreen'
 import { ReportScreen } from './components/ReportScreen'
+import { TradingScreen } from './components/TradingScreen'
 import { SetupScreen } from './components/SetupScreen'
 import { TitleScreen } from './components/TitleScreen'
 import './App.css'
@@ -25,6 +29,7 @@ export default function App() {
   const [music, setMusic] = useState(true)
   const [sfx, setSfx] = useState(true)
   const started = useRef(false)
+  const { skin, toggle: toggleSkin } = useSkin()
   const [scores, setScores] = useState<Score[]>(loadScores)
   const [freshScores, setFreshScores] = useState<string[]>([])
 
@@ -41,16 +46,17 @@ export default function App() {
     synth.setSfx(sfx)
   }, [music, sfx])
 
+  // 1979 gets the chiptune; the remaster gets the band.
   useEffect(() => {
     if (!started.current) return
-    const tune =
-      state.phase === 'gameover'
-        ? END_TUNE
-        : state.phase === 'title' || state.phase === 'intro' || state.phase === 'setup'
-          ? TITLE_TUNE
-          : DAY_TUNE
+    const front = state.phase === 'title' || state.phase === 'intro' || state.phase === 'setup'
+    const set =
+      skin === 'modern'
+        ? { title: FUNK_TITLE, day: FUNK_DAY, end: FUNK_END }
+        : { title: TITLE_TUNE, day: DAY_TUNE, end: END_TUNE }
+    const tune = state.phase === 'gameover' ? set.end : front ? set.title : set.day
     synth.playTune(tune, false)
-  }, [state.phase])
+  }, [state.phase, skin])
 
   useEffect(() => {
     synth.setMusic(music)
@@ -59,7 +65,26 @@ export default function App() {
     synth.setSfx(sfx)
   }, [sfx])
 
+  /**
+   * Two tabs in one browser share localStorage. Nothing else is shared - the
+   * game itself lives entirely in the page - but the table should not go
+   * stale just because the other tab finished a season first.
+   */
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === HIGH_SCORE_KEY || e.key === null) setScores(loadScores())
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
   const blip = useCallback(() => synth.blip(), [])
+
+  // Pressing PLAY was the gesture that unlocked audio, so the band can start.
+  const booted = useCallback(() => {
+    wake()
+    dispatch({ type: 'BOOTED' })
+  }, [wake])
 
   const goSetup = useCallback(() => {
     wake()
@@ -102,11 +127,15 @@ export default function App() {
 
     const results = active.map((p) => simulate(p, decisions[p.id], state.conditions!, rng.current))
     dispatch({ type: 'RESOLVE', results })
-
-    if (state.conditions.storm) synth.thunder()
-    else if (results.some((r) => r.profit > 0)) synth.cash()
-    else synth.sad()
   }
+
+  /** The day has finished trading; ring up the takings and open the books. */
+  const closeTill = useCallback(() => {
+    if (state.conditions?.storm) synth.sad()
+    else if (state.results.some((r) => r.profit > 0)) synth.cash()
+    else synth.sad()
+    dispatch({ type: 'SHOW_REPORT' })
+  }, [state.conditions, state.results])
 
   const nextDay = () => {
     synth.select()
@@ -152,7 +181,10 @@ export default function App() {
   // Only the trading screens have a day, a sky and a till to report on.
   const status = useMemo(() => {
     const inPlay =
-      state.phase === 'briefing' || state.phase === 'decide' || state.phase === 'report'
+      state.phase === 'briefing' ||
+      state.phase === 'decide' ||
+      state.phase === 'trading' ||
+      state.phase === 'report'
     if (!inPlay || !state.conditions) return null
     return {
       day: state.day,
@@ -186,6 +218,17 @@ export default function App() {
             >
               SOUND {sfx ? 'ON' : 'OFF'}
             </Btn>
+            <Btn
+              kind="ghost"
+              onClick={() => {
+                wake()
+                synth.select()
+                toggleSkin()
+              }}
+              title={skin === 'crt' ? 'Switch to the remaster' : 'Switch to the 1979 machine'}
+            >
+              {skin === 'crt' ? 'REMASTER' : '1979'}
+            </Btn>
             <Btn kind="ghost" onClick={restart} title="Abandon this run">
               NEW GAME
             </Btn>
@@ -193,6 +236,8 @@ export default function App() {
           </div>
         }
       >
+        {state.phase === 'boot' && <BootScreen onLoaded={booted} />}
+
         {status && (
           <div className="statusbar">
             <span>DAY {String(status.day).padStart(2, '0')}</span>
@@ -234,6 +279,16 @@ export default function App() {
               onSubmit={submit}
               onBlip={blip}
               onReject={() => synth.reject()}
+            />
+          )}
+
+          {state.phase === 'trading' && state.conditions && (
+            <TradingScreen
+              key={state.day}
+              results={state.results}
+              players={state.players}
+              conditions={state.conditions}
+              onDone={closeTill}
             />
           )}
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { MAX_SIGNS, SIGN_COST } from '../game/constants'
-import { dollars } from '../game/engine'
+import { dollars, streetBusyness } from '../game/engine'
 import type { DayConditions, Decision, Player } from '../game/types'
 import { Btn, Line } from './Crt'
 import { Scene } from './Scene'
@@ -48,8 +48,10 @@ export function DecideScreen({
   const left = player.assets - total
 
   const error = useMemo(() => {
-    if (signCost > player.assets) return 'YOU CANNOT AFFORD THAT MANY SIGNS.'
-    if (total > player.assets) return "YOU DON'T HAVE ENOUGH MONEY TO MAKE THAT MANY GLASSES."
+    // Kept to one line each: the row below is always reserved, so a message
+    // that wrapped would shift the button after all.
+    if (signCost > player.assets) return 'NOT ENOUGH MONEY FOR THAT MANY SIGNS.'
+    if (total > player.assets) return 'NOT ENOUGH MONEY FOR THAT MANY GLASSES.'
     if (d.glasses === 0) return 'YOU MUST MAKE AT LEAST ONE GLASS.'
     return null
   }, [signCost, total, player.assets, d.glasses])
@@ -77,7 +79,11 @@ export function DecideScreen({
       <Line className="center inv-line">
         {playerCount > 1 ? `${player.name} - DAY ${conditions.day}` : `DAY ${conditions.day}`}
       </Line>
-      <Scene conditions={{ ...conditions, storm: false }} price={d.price} />
+      <Scene
+        conditions={{ ...conditions, storm: false }}
+        price={d.price}
+        traffic={streetBusyness(conditions)}
+      />
       <Line>
         ASSETS <span className="money">{dollars(player.assets)}</span> &middot; LEMONADE COSTS{' '}
         {conditions.costPerGlass}&#162; A GLASS
@@ -125,7 +131,8 @@ export function DecideScreen({
         TODAY&apos;S OUTLAY <span className="money">{dollars(total)}</span> &middot; LEFT IN TIN{' '}
         <span className={left < 0 ? 'warn' : 'money'}>{dollars(left)}</span>
       </Line>
-      {error && <Line className="warn">{error}</Line>}
+      {/* Always present, so showing or clearing it never moves the button. */}
+      <Line className={`warn hint ${error ? 'is-on' : ''}`}>{error ?? '\u00a0'}</Line>
       <div className="row center">
         <Btn kind="primary" onClick={submit} disabled={!!error}>
           SELL LEMONADE

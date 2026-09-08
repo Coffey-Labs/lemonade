@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { WEATHER } from '../game/constants'
-import { dollars } from '../game/engine'
+import { dollars, soldBusyness } from '../game/engine'
 import type { DayConditions, DayResult, Player } from '../game/types'
 import { Btn, Line } from './Crt'
 import { Scene } from './Scene'
@@ -30,39 +30,13 @@ export function ReportScreen({
   onRetire: () => void
   onBlip: () => void
 }) {
-  // App remounts this each day, so these start fresh without a reset effect.
+  // App remounts this each day, so this starts fresh without a reset effect.
   const [index, setIndex] = useState(0)
-  // The storm gets its own screen before the books are opened.
-  const [stormSeen, setStormSeen] = useState(false)
 
   const r = results[index]
   const player = players.find((p) => p.id === r.playerId)!
   const isLast = index === results.length - 1
   const everyoneBroke = players.every((p) => p.bankrupt)
-
-  if (conditions.storm && !stormSeen) {
-    return (
-      <div className="stack">
-        <Line className="center inv-line">DAY {conditions.day} IN LEMONSVILLE</Line>
-        <Scene conditions={conditions} />
-        <Line className="warn">A THUNDERSTORM HIT LEMONSVILLE EARLIER</Line>
-        <Line className="warn">TODAY, JUST AS THE STANDS WERE BEING</Line>
-        <Line className="warn">SET UP. EVERYTHING WAS RUINED!!</Line>
-        <Line />
-        <div className="row center">
-          <Btn
-            kind="primary"
-            onClick={() => {
-              onBlip()
-              setStormSeen(true)
-            }}
-          >
-            SEE THE DAMAGE
-          </Btn>
-        </div>
-      </div>
-    )
-  }
 
   const events = [
     WEATHER[conditions.weather].label,
@@ -77,7 +51,12 @@ export function ReportScreen({
     <div className="stack">
       <Line className="center inv-line">$$ LEMONSVILLE DAILY FINANCIAL REPORT $$</Line>
 
-      <Line />
+      <Scene
+        conditions={conditions}
+        price={r.decision.price}
+        traffic={soldBusyness(r.glassesSold)}
+        variant="strip"
+      />
       <Line className="center accent">
         DAY {conditions.day} &mdash; {player.name}
       </Line>
@@ -95,6 +74,7 @@ export function ReportScreen({
       <Row label="PROFIT" value={dollars(r.profit)} strong />
       <Row label="ASSETS" value={dollars(r.assetsAfter)} strong />
 
+
       {player.bankrupt && (
         <>
           <Line />
@@ -103,7 +83,6 @@ export function ReportScreen({
         </>
       )}
 
-      <Line />
       <div className="row center">
         {!isLast && (
           <Btn

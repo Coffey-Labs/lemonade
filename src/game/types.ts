@@ -39,12 +39,14 @@ export interface DayResult {
 }
 
 export type Phase =
+  | 'boot'
   | 'title'
   | 'intro'
   | 'setup'
   | 'briefing'
   | 'decide'
   | 'resolve'
+  | 'trading'
   | 'report'
   | 'gameover'
   | 'scores'

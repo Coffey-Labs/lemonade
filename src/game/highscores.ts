@@ -1,4 +1,5 @@
-const KEY = 'lemonade.highscores.v1'
+export const HIGH_SCORE_KEY = 'lemonade.highscores.v1'
+const KEY = HIGH_SCORE_KEY
 export const MAX_SCORES = 10
 
 export interface Score {

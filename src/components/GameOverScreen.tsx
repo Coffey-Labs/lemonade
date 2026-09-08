@@ -2,9 +2,7 @@ import { STARTING_ASSETS } from '../game/constants'
 import { dollars } from '../game/engine'
 import type { DayResult, Player } from '../game/types'
 import { Btn, Line } from './Crt'
-import { bannerRows } from './logo'
-
-const BANNER = bannerRows('LEMONADE')
+import { Wordmark } from './TitleScreen'
 
 export function GameOverScreen({
   players,
@@ -29,9 +27,7 @@ export function GameOverScreen({
 
   return (
     <div className="stack">
-      <pre className="banner small" aria-hidden>
-        {BANNER.join('\n')}
-      </pre>
+      <Wordmark small />
       <Line className="center inv-line">THE SUMMER IS OVER</Line>
       <Line />
       <Line className="center">

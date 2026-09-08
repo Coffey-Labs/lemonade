@@ -1,4 +1,5 @@
 import { WEATHER, costMessage } from '../game/constants'
+import { streetBusyness } from '../game/engine'
 import type { DayConditions } from '../game/types'
 import { Btn, Line } from './Crt'
 import { Scene } from './Scene'
@@ -15,7 +16,7 @@ export function BriefingScreen({
   return (
     <div className="stack">
       <Line className="center inv-line">DAY {conditions.day} IN LEMONSVILLE</Line>
-      <Scene conditions={{ ...conditions, storm: false }} />
+      <Scene conditions={{ ...conditions, storm: false }} traffic={streetBusyness(conditions)} />
       <Line className="center accent">
         WEATHER REPORT: {WEATHER[conditions.weather].label}
       </Line>
