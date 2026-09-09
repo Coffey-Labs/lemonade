@@ -3,7 +3,15 @@
  * service rather than the browser. Nothing about it is trusted on the way in:
  * the server decides what is plausible, and the client re-checks the shape of
  * whatever comes back before putting it on screen.
+ *
+ * The service is no longer ours. It is shared with the other games on the site
+ * -- see https://github.com/Coffey-Labs/games-scores -- which is why every
+ * call names the game. Nothing else about it leaks in here: rows come back in
+ * this game's own field names, so this file is otherwise what it always was.
  */
+
+/** Which board on the shared service is ours. */
+export const GAME = 'lemonade'
 
 const BASE = (import.meta.env.VITE_SCORES_API ?? '/api').replace(/\/+$/, '')
 const TIMEOUT_MS = 8000
@@ -62,14 +70,17 @@ async function call(path: string, init?: RequestInit): Promise<unknown> {
 }
 
 export async function fetchScores(): Promise<Score[]> {
-  return parseBoard(await call('/scores'))
+  return parseBoard(await call(`/scores?game=${GAME}`))
 }
 
 /** Posts a whole table's worth of players at once and returns the new board. */
 export async function submitScores(
   entries: NewScore[],
 ): Promise<{ ids: string[]; scores: Score[] }> {
-  const body = await call('/scores', { method: 'POST', body: JSON.stringify({ entries }) })
+  const body = await call('/scores', {
+    method: 'POST',
+    body: JSON.stringify({ game: GAME, entries }),
+  })
   const ids = (body as { ids?: unknown })?.ids
   return {
     ids: Array.isArray(ids) ? ids.filter((i): i is string => typeof i === 'string') : [],
