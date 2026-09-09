@@ -2,17 +2,143 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0b0c12" />
+    <title>Lemonade Stand — 1979 business sim, in your browser</title>
     <meta
       name="description"
-      content="Lemonade Stand - a browser recreation of the Atari 8-bit BASIC classic, with chiptune music."
+      content="Read the weather, buy your glasses, price the jug and hope it doesn't rain. Play the 1979 classic as the Atari left it, or in a cel-shaded remaster with a funk band. Free, no account, nothing to install."
     />
-    <title>Lemonade Stand</title>
+    <meta name="author" content="John Coffey" />
+
+    <!--
+      Canonical, because the container serving this falls back to index.html
+      for any path under /lemonade/ rather than returning a 404. That is right
+      for the app and wrong for a crawler, which would otherwise be free to
+      index /lemonade/anything-at-all as a separate page with identical
+      content.
+    -->
+    <link rel="canonical" href="https://games.jcoffey.dev/lemonade/" />
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#0b0c12" />
+
+    <meta property="og:site_name" content="Games · jcoffey.dev" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Lemonade Stand — 1979 business sim, in your browser" />
+    <meta property="og:url" content="https://games.jcoffey.dev/lemonade/" />
+    <meta
+      property="og:description"
+      content="Read the weather, buy your glasses, price the jug and hope it doesn't rain. Play it as the Atari left it, or in a cel-shaded remaster with a funk band — same rules either way."
+    />
+    <!--
+      The preview image is served by the site rather than carried in this
+      repository. Every pixel of the game is SVG drawn in code and there are no
+      artwork files here; a social card is not part of the game. It sits with
+      the deployment, which is also where the canonical URL above points, so
+      the two agree about which site this is.
+    -->
+    <meta property="og:image" content="https://games.jcoffey.dev/img/lemonade-social.png?v=2026-09-09a" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Lemonade Stand — a lemonade stand on a sunny street, drawn in flat colour"
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Lemonade Stand — 1979 business sim, in your browser" />
+    <meta
+      name="twitter:description"
+      content="Read the weather, buy your glasses, price the jug and hope it doesn't rain. As the Atari left it, or cel-shaded with a funk band."
+    />
+    <meta name="twitter:image" content="https://games.jcoffey.dev/img/lemonade-social.png?v=2026-09-09a" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Lemonade Stand",
+        "url": "https://games.jcoffey.dev/lemonade/",
+        "description": "A browser recreation of the Atari 8-bit BASIC classic. Each morning you read the weather, then decide how many glasses to make, how many signs to put up and what to charge. Heat lifts the crowd, a thunderstorm ruins every glass, and signs help a lot at first and hardly at all later.",
+        "genre": ["Simulation", "Strategy", "Retro"],
+        "gamePlatform": "Web browser",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Any modern web browser",
+        "playMode": ["SinglePlayer", "MultiPlayer"],
+        "numberOfPlayers": {
+          "@type": "QuantitativeValue",
+          "minValue": 1,
+          "maxValue": 4
+        },
+        "author": {
+          "@type": "Person",
+          "name": "John Coffey",
+          "url": "https://jcoffey.dev/"
+        },
+        "license": "https://www.gnu.org/licenses/agpl-3.0.html",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        },
+        "inLanguage": "en"
+      }
+    </script>
+
+    <!--
+      The same three steps the way-back link in the footer offers, said in a
+      form a crawler reads: this game sits under the games site, which sits
+      under jcoffey.dev.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "John Coffey",
+            "item": "https://jcoffey.dev/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Games",
+            "item": "https://games.jcoffey.dev/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Lemonade Stand",
+            "item": "https://games.jcoffey.dev/lemonade/"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      What the page says before React has said anything. A crawler that does
+      not run scripts, and a reader who has them turned off, both get the game
+      described and a way onwards rather than an empty div.
+    -->
+    <noscript>
+      <h1>Lemonade Stand</h1>
+      <p>
+        A browser recreation of the Atari 8-bit BASIC classic. Read the weather,
+        buy your glasses, put up signs, set a price, and find out what the town
+        thought. One to four players share a keyboard. It needs JavaScript to
+        play.
+      </p>
+      <p><a href="https://games.jcoffey.dev/">The rest of the games</a></p>
+      <p><a href="https://github.com/Coffey-Labs/lemonade">Source, AGPL-3.0-or-later</a></p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
