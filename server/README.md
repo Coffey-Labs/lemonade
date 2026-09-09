@@ -25,9 +25,10 @@ Everything in a request is treated as hostile. Names are forced to a printable
 uppercase subset and cut to 12 characters. Every number must be an integer in
 range, and a score is refused if it could not have happened: assets above
 `$2.00 + $25 a day`, or glasses above 400 a day, are rejected as impossible for
-the days claimed. Bodies are capped at 4 KB and submissions at 30 an hour per
+the days claimed. Bodies are capped at 4 KB and submissions at 120 an hour per
 address, which is why `TRUST_PROXY=1` matters behind nginx — otherwise every
-request looks like it came from the proxy.
+request looks like it came from the proxy and one busy classroom would lock
+everyone else out.
 
 **It cannot prove a score is real.** There are no accounts and no signing, so
 anyone willing to craft a request can post a plausible score under any name.

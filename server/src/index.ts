@@ -53,7 +53,14 @@ interface Bucket {
 }
 const posts = new Map<string, Bucket>()
 const POST_WINDOW_MS = 60 * 60 * 1000
-const POST_LIMIT = 30
+/*
+ * Per address, per hour. Generous on purpose: a classroom, an office or a
+ * household all arrive from one address, and thirty was low enough that a
+ * class finishing a season together would have started losing scores to a
+ * 429. What actually keeps rubbish off the board is the plausibility check
+ * in validate.ts, not this - this only stops the database being hammered.
+ */
+const POST_LIMIT = 120
 
 function overPostLimit(ip: string): boolean {
   const now = Date.now()

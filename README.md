@@ -134,15 +134,25 @@ just slash-separated notes in a step (`F4/A4/C5`).
 Both run off one scheduler that queues notes 200 ms ahead, so the groove does
 not stutter when React re-renders. `MUSIC` and `SOUND` toggle independently.
 
-## Two people, two browsers
+## How many people can play
 
-The game itself is a static bundle and lives entirely in the page. Two people
-on two machines, two browsers or two profiles play completely independent
-games — different seeds, different weather, different books. Nothing about a
-season is shared or synchronised.
+As many as you like. There is no limit, and no meaningful sense in which
+players share anything while they are playing.
 
-The only thing they have in common is the leaderboard they both post to at the
-end. The skin preference is the one thing still kept in the browser.
+The game holds no state on the server — it is a static bundle, and a season
+lives entirely in the page. Two people, or two hundred, on any mix of
+machines, browsers and profiles get completely independent games: different
+seeds, different weather, different books. The server never learns a game is
+happening; it only ever sees a finished score being posted at the end.
+
+The one real cap is **four players to a game**, and that is a keyboard
+limitation rather than a technical one — they are taking turns at the same
+stand, hot-seat style. Nothing stops four separate people playing four
+separate games at the same moment.
+
+Everyone posts to the same leaderboard, and everyone reads the same one. That
+is the only thing players have in common. The skin preference is the one thing
+still kept in the browser.
 
 ## Running it anywhere
 
