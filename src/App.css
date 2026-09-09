@@ -771,6 +771,20 @@ a.btn {
   letter-spacing: 0.06em;
 }
 
+/*
+ * The way back. The arrow is a pseudo-element rather than part of the label so
+ * that it can be the right arrow for the machine you are looking at: a chevron
+ * on the remaster, and the two ASCII characters the Atari's character set
+ * actually had on the 1979 skin.
+ */
+.controls .back::before {
+  content: '\2039\00a0';
+}
+
+:root:not([data-skin='modern']) .controls .back::before {
+  content: '<-\00a0';
+}
+
 .seed { color: #566079; margin-left: auto; }
 html[data-skin='modern'] .seed { color: #9b8ac4; }
 
