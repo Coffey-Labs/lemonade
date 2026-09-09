@@ -3,8 +3,8 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // The game is served under a path on games.jcoffey.dev, so asset URLs have
-  // to be built for it. Local development stays at the root.
+  // Asset URLs are baked in at build time, so this has to match the path the
+  // game is served from. Local development stays at the root.
   base: process.env.BASE_PATH ?? '/',
   plugins: [react()],
   server: {

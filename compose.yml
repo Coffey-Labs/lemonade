@@ -1,0 +1,52 @@
+# Run the game and its leaderboard locally, or on any host you like.
+#
+#   docker compose up -d --build
+#   -> game      http://localhost:8080
+#      scores    http://localhost:5184/api/scores
+#
+# The game talks to /api, so put both behind one origin in production (see
+# README.md). Nothing here is specific to any particular deployment.
+
+services:
+  lemonade-web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        # Where the game is served from. "/" unless it sits under a path.
+        BASE_PATH: /
+    image: lemonade-web:latest
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
+
+  lemonade-scores:
+    build:
+      context: ./server
+    image: lemonade-scores:latest
+    restart: unless-stopped
+    ports:
+      - '5184:5184'
+    environment:
+      # Set to 1 when something else terminates TLS in front of this, so the
+      # rate limit counts players rather than counting the proxy.
+      TRUST_PROXY: '0'
+      DB_PATH: /data/scores.db
+    # The only writable path, and the only state worth keeping.
+    volumes:
+      - lemonade-scores-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  lemonade-scores-data:

@@ -752,6 +752,13 @@ html[data-skin='modern'] .btn-ghost:active:not(:disabled) {
   box-shadow: none;
 }
 
+/* The source link is an anchor, not a button, but wears the same clothes. */
+a.btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
 .controls {
   display: flex;
   flex-wrap: wrap;

@@ -22,6 +22,12 @@ import { SetupScreen } from './components/SetupScreen'
 import { TitleScreen } from './components/TitleScreen'
 import './App.css'
 
+/**
+ * AGPL section 13: anyone playing this over a network is entitled to the
+ * source of the version they are playing, so the offer sits on every screen.
+ */
+const SOURCE_URL = 'https://github.com/Coffey-Labs/lemonade'
+
 export default function App() {
   const [seed] = useState(randomSeed)
   const [state, dispatch] = useReducer(reducer, seed, initialState)
@@ -241,6 +247,15 @@ export default function App() {
             <Btn kind="ghost" onClick={restart} title="Abandon this run">
               NEW GAME
             </Btn>
+            <a
+              className="btn btn-ghost"
+              href={SOURCE_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              title="Free software, AGPL-3.0-or-later"
+            >
+              SOURCE
+            </a>
             <span className="seed">SEED {state.seed}</span>
           </div>
         }

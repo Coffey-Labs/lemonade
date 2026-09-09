@@ -144,30 +144,30 @@ season is shared or synchronised.
 The only thing they have in common is the leaderboard they both post to at the
 end. The skin preference is the one thing still kept in the browser.
 
-## Deploying
-
-Three containers behind the host's nginx, which does TLS and routing and serves
-nothing off disk:
-
-| Path        | Container         | What it is                 |
-| ----------- | ----------------- | -------------------------- |
-| `/`         | `games-hub`       | the list of games          |
-| `/lemonade/`| `lemonade-web`    | this game, a static bundle |
-| `/api/`     | `lemonade-scores` | the shared leaderboard     |
+## Running it anywhere
 
 ```bash
-docker compose -f deploy/compose.yml up -d --build
+docker compose up -d --build
+# game    http://localhost:8080
+# scores  http://localhost:5184/api/scores
 ```
 
-`deploy/nginx-host.conf.example` is the host-side server block. The game's
-asset paths are baked in at build time, so `BASE_PATH` in the compose file has
-to match the path nginx proxies it to. Only the scores container writes
-anything: a named volume holding the SQLite database, which is the one piece of
-state that must survive a redeploy.
+Two containers: a static bundle behind nginx, and the leaderboard. Only the
+scores container writes anything — a named volume holding the SQLite database,
+which is the one piece of state worth keeping.
+
+The game asks for `/api`, so in production put both behind one origin and
+proxy `/api/` to the scores container. Serving the game from a sub-path means
+rebuilding it for that path, because asset URLs are baked in: set `BASE_PATH`
+(the `web/Dockerfile` build arg) to match. Set `TRUST_PROXY=1` on the scores
+container when something else terminates TLS in front of it, so the rate limit
+counts players rather than counting the proxy.
 
 ## Licence
 
-AGPL-3.0-or-later — see [LICENSE](LICENSE).
+AGPL-3.0-or-later — see [LICENSE](LICENSE). Source:
+<https://github.com/Coffey-Labs/lemonade>, also linked from every screen in the
+game, which is what section 13 asks for.
 
 Affero rather than plain GPL because the leaderboard is a network service:
 anyone running a modified copy of it for other people has to offer them the
