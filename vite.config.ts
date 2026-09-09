@@ -8,9 +8,10 @@ export default defineConfig({
   base: process.env.BASE_PATH ?? '/',
   plugins: [react()],
   server: {
-    // The game talks to /api in every environment; in development that is the
-    // scores service on 5184, in production it is nginx in front of the
-    // container. Nothing in the client needs to know the difference.
+    // The game talks to /api in every environment; in production that is
+    // nginx in front of the shared scores container. In development, run
+    // https://github.com/Coffey-Labs/games-scores alongside this -- or do not,
+    // and the board will say so rather than breaking.
     proxy: {
       '/api': {
         target: process.env.SCORES_TARGET ?? 'http://localhost:5184',

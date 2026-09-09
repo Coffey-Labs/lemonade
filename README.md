@@ -61,12 +61,21 @@ finished are picked out in yellow.
 There is no way to clear it. A stand leaves the list only by being pushed off
 the bottom by a better one, so a good summer stands until somebody beats it.
 
-The board lives in `server/`, not in the browser, so it is the one part of the
-game that needs a line out. With the service unreachable the game plays exactly
-as normal and the board says so plainly rather than breaking; posting happens
-behind the closing standings, so a slow network never holds up the end of a
-season. See [server/README.md](server/README.md) for the API, the validation
-and what a board with no accounts can and cannot promise.
+The board is no longer in this repository and is no longer ours alone: every
+game on the site shares one service,
+[games-scores](https://github.com/Coffey-Labs/games-scores), which is one
+container and one volume however many games there are. It started here, because
+when it was written there was one game; a second game would have meant a second
+container and a second database to back up for every game after that. All this
+repository holds now is the client in `src/game/highscores.ts`, which names the
+game on every call and is otherwise what it always was — rows come back in this
+game's own field names.
+
+It is still the one part of the game that needs a line out. With the service
+unreachable the game plays exactly as normal and the board says so plainly
+rather than breaking; posting happens behind the closing standings, so a slow
+network never holds up the end of a season. That repository's README has the
+API, the validation and what a board with no accounts can and cannot promise.
 
 ## How it is put together
 

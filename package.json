@@ -7,9 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview",
-    "scores": "node --watch server/src/index.ts",
-    "dev:all": "node scripts/dev-all.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.2.8",
