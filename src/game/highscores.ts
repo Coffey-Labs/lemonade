@@ -5,7 +5,7 @@
  * whatever comes back before putting it on screen.
  *
  * The service is no longer ours. It is shared with the other games on the site
- * -- see https://github.com/Coffey-Labs/games-scores -- which is why every
+ * -- see https://github.com/jcoffey-dev/games-scores -- which is why every
  * call names the game. Nothing else about it leaks in here: rows come back in
  * this game's own field names, so this file is otherwise what it always was.
  */

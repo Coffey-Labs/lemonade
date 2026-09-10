@@ -63,7 +63,7 @@ the bottom by a better one, so a good summer stands until somebody beats it.
 
 The board is no longer in this repository and is no longer ours alone: every
 game on the site shares one service,
-[games-scores](https://github.com/Coffey-Labs/games-scores), which is one
+[games-scores](https://github.com/jcoffey-dev/games-scores), which is one
 container and one volume however many games there are. It started here, because
 when it was written there was one game; a second game would have meant a second
 container and a second database to back up for every game after that. All this
@@ -185,7 +185,7 @@ counts players rather than counting the proxy.
 ## Licence
 
 AGPL-3.0-or-later — see [LICENSE](LICENSE). Source:
-<https://github.com/Coffey-Labs/lemonade>, also linked from every screen in the
+<https://github.com/jcoffey-dev/lemonade>, also linked from every screen in the
 game, which is what section 13 asks for.
 
 Affero rather than plain GPL because the leaderboard is a network service:

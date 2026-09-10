@@ -26,7 +26,7 @@ import './App.css'
  * AGPL section 13: anyone playing this over a network is entitled to the
  * source of the version they are playing, so the offer sits on every screen.
  */
-const SOURCE_URL = 'https://github.com/Coffey-Labs/lemonade'
+const SOURCE_URL = 'https://github.com/jcoffey-dev/lemonade'
 
 /**
  * The way back out.
