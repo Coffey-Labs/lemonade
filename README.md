@@ -1,5 +1,9 @@
 # Lemonade Stand
 
+> [!NOTE]
+> Development happens on [git.coffeylabs.org/jcoffey-dev/lemonade](https://git.coffeylabs.org/jcoffey-dev/lemonade); the copy on GitHub is a read-only mirror.
+> Report issues at **[git.coffeylabs.org/jcoffey-dev/lemonade/issues](https://git.coffeylabs.org/jcoffey-dev/lemonade/issues)**, and join discussions at **[community.coffeylabs.org](https://community.coffeylabs.org)**.
+
 A browser recreation of the Atari 8-bit BASIC classic — the one you typed in,
 ran on a TV, and lost two dollars to on a cloudy day.
 
